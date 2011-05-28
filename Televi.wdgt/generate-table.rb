@@ -69,7 +69,7 @@ class Show
 end
 
 CHANNEL_PATTERN = %r{<a name="dummy\d{4}" target="_top" href="gridChannel.php?.+?&ch=(\d{4})">(.+?)</a>}m
-TITLE_PATTERN = %r{<a .*?href="/genre/detail.php3\?.*?&hsid=\d{4}\d{2}(\d{2})(\d{4})\d{3}" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
+TITLE_PATTERN = %r{<a .*?href="(/genre/detail.php3\?.*?&hsid=\d{4}\d{2}(\d{2})(\d{4})\d{3})" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
 TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><b>24</b></TD>}
 
 def parse_channels(html)
@@ -90,8 +90,8 @@ def parse_programs(channels_map, html, today)
 
   html.each do |ln|
     if md = ln.match(TITLE_PATTERN)
-      day, ch, start_hour, start_min, last_hour, last_min = *(md[1, 6].collect do |i| i.to_i end)
-      title = md[7].gsub(/<.+?>/, '')
+      day, ch, start_hour, start_min, last_hour, last_min = *(md[2, 6].collect do |i| i.to_i end)
+      title = "<a onclick=\"openONTV('#{md[1]}')\">#{md[8].gsub(/<.+?>/, '')}</a>"
 
       if tommorow
         start_hour += 24

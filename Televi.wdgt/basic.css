@@ -66,6 +66,10 @@ td {
   /* background: url(Line.png) 0px 0px no-repeat; */
   padding: 0 2px 0 5px;
 }
+#programs a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
 ul {
   list-style-type: none;
   padding: 0;

@@ -7,6 +7,8 @@
     <title>Televi Time Table</title>
 
     <script type="text/javascript">
+      var widget = top.widget;
+
       function scrollToNow_()
       {
         var hours = (new Date()).getHours();
@@ -14,10 +16,18 @@
           hours += 24;
         }
         window.scrollTo(0, document.getElementById(''+hours).offsetTop);
-    }
+      }
+
+      function openONTV(path)
+      {
+        if (window.widget)
+          widget.openURL('http://www.ontvjapan.com' + path);
+        else
+          alert(path);
+      }
     </script>
   </head>
-  
+
   <body onload="scrollToNow_();">
     <table id="channels">
       <tr>
@@ -27,7 +37,7 @@
         <% end %>
       </tr>
     </table>
-    
+
     <table id="programs">
       <% 24.times do |hour|; hour += 5 %>
       <tr>
