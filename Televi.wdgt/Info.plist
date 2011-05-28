@@ -11,10 +11,14 @@
 	<key>DefaultImage</key>
 	<string>Default.png</string>
 	<key>Height</key>
-	<integer>200</integer>
+	<integer>220</integer>
 	<key>MainHTML</key>
 	<string>index.html</string>
 	<key>Width</key>
 	<integer>660</integer>
+    <key>CloseBoxInsetX</key>
+    <integer>5</integer>
+    <key>CloseBoxInsetY</key>
+    <integer>5</integer>
 </dict>
 </plist>

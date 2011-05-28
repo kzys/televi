@@ -1,52 +1,34 @@
-var interval = null;
+File = new Object();
 
-function needToUpdate()
-{
-    return widget.system("/usr/bin/ruby update-check.rb", null).status != 0;
-}
-
-function endHandler() {
-    var w = document.getElementById('inner').contentWindow;
-    w.document.location.href = 'table.html';
-
-    setTimeout("scrollToNow()", 100);
-}
-
-function updateTable() {
-    if (! window.widget)
-        return;
-
-    if (needToUpdate()) {
-        var w = document.getElementById('inner').contentWindow;
-        w.document.location.href = 'loading.html';
-        
-        var state = widget.preferenceForKey("state");
-        if (state == null) state = "";
-        
-        widget.system("/usr/bin/ruby generate-table.rb " + state + " > table.html",
-                      endHandler);
+File.exist = function(path) {
+    if (window.widget) {
+        return widget.system('/bin/test -f ' + path, null).status == 0;
     } else {
-        endHandler();
+        return false;
     }
 }
-
-function forceUpdateTable() {
-    if (! window.widget)
-        return;
-
-    widget.system('/bin/rm table.html', null);
-    updateTable();
+    
+File.mtime = function(path) {
+    var s = widget.system("/usr/bin/ruby -e 'puts File.mtime(ARGV.shift).tv_sec * 1000' " + path,
+                          null).outputString;
+    return new Date(s);
 }
 
-function writeTimeNavigation()
+
+function scrollToHour(hour) {
+    var w = document.getElementById('inner').contentWindow;
+    var e = w.document.getElementById(''+hour);
+
+    w.scrollTo(0, e.offsetTop);
+}
+
+function scrollToNow()
 {
-    for (var i = 0; i < 24; i++) {
-	var hour = (4 + i) % 24;
-	
-	document.write("<a href='javascript:scrollToHour(" + hour + ")'>" +
-		       hour +
-		       "</a> ");
+    var hours = (new Date()).getHours();
+    if (hours < 5) {
+        hours += 24;
     }
+    scrollToHour(hours);
 }
 
 function changeState(value)
@@ -56,58 +38,75 @@ function changeState(value)
     }
 }
 
-function scrollToHour(hour) {
-    var w = document.getElementById('inner').contentWindow;
-    var e = w.document.getElementById(''+hour);
+function endHandler()
+{ 
+    var f = document.getElementById('inner');
+    f.src = 'table.html';
 
-    var top = e.offsetTop;
-    
-    if (top < 100)
-        top = 0;
-    else
-        top -= 0;
-    
-    w.scrollTo(0, top);
+    // setTimeout("scrollToNow()", 100);
 }
 
-function scrollToNow() {
-    var now = new Date();
-    scrollToHour(now.getHours());
+function updateTable()
+{
+    alert('updateTable');
+    
+    var f = document.getElementById('inner');
+    f.src = 'loading.html';
+
+    if (window.widget) {
+        var state = widget.preferenceForKey("state");
+        if (! state) {
+            state = '';
+        }
+
+        widget.system("/usr/bin/ruby generate-table.rb " + state + " > table.html",
+                      endHandler);
+    } else {
+        f.src = document.getElementById('inner').src = 'table.html';
+    }
 }
 
 function onshow()
 {
-    if (! interval) {
-        interval = setInterval(1000 * 60 * 60, updateTable);
+    alert('onshow');
+
+    var now = new Date();
+    
+    if ( (! File.exist('table.html')) ||
+         (File.mtime('table.html').getDay() != now.getDay() && now.getHours() >= 5)) {
+        updateTable();
+    } else {
+        scrollToNow();
     }
-    scrollToNow();
 }
 
 function onhide()
 {
-    /*
-    if (! interval) {
-        clearInterval(updateTable);
-        interval = null;
-    }
-    */
+    ;
 }
 
 function setup()
 {
-    var e = document.getElementById("back");
-    e.style.display = 'none';
+    var back = document.getElementById("back");
+    back.style.display = 'none';
+
+    /*
+    var iframe = document.getElementById('inner');
+    if (File.exist('table.html')) {
+        iframe.src = 'table.html';
+    }
+    */
 
     if (window.widget) {
         widget.onshow = onshow;
-        // widget.onhide = onhide;
+        widget.onhide = onhide;
     }
 
-    updateTable();
+    scrollToNow();
 }
 
 function doneClicked()
 {
     Flip.hideBack();
-    forceUpdateTable();
+    setTimeout('scrollToNow();', 1000); // Wait until done of flip
 }

@@ -1,116 +1,131 @@
-def euc_to_utf8(src)
-  require 'iconv'
+require 'iconv'
 
-  ic = Iconv.new('UTF-8', 'EUC-JP')
-  result = ''
+class Iconv
+  def self.to_utf8(src)
+    ic = Iconv.new('UTF-8', 'EUC-JP')
+    result = ''
+    
+    begin
+      result << ic.iconv(src)
+    rescue Iconv::IllegalSequence => e
+      result << e.success
+      ch, src = e.failed.split(//, 2)
+      retry
+    end
 
-  begin
-    result << ic.iconv(src)
-  rescue Iconv::IllegalSequence => e
-    result << e.success
-    ch, src = e.failed.split(//, 2)
-    # result << '?'
-    retry
+    result
+  end
+end
+
+class Channel
+  def initialize(number, title)
+    @number = number
+    @title = title
+
+    @programs = {}
+  end
+
+  def fetch(hour)
+    @programs[hour]
+  end
+
+  def << (show)
+    # 5:00 - 6:00 don't regist at 6
+    last = if show.last_min > 0
+             show.last_hour
+           else
+             show.last_hour - 1
+           end
+    
+    # regist
+    (show.start_hour..last).each do |h|
+      @programs[h] ||= []
+      @programs[h] << show
+    end
+  end
+
+  attr_reader :number, :title
+end
+
+class Show
+  def initialize(start_hour, start_min, last_hour, last_min, title)
+    @start_hour = start_hour
+    @start_min = start_min
+    @last_hour = last_hour
+    @last_min = last_min
+    @title = title
+  end
+
+  attr_reader :title, :start_hour, :start_min, :last_hour, :last_min
+
+  alias_method :hour, :start_hour
+  alias_method :min,  :start_min
+end
+
+CHANNEL_PATTERN = %r{<a name="dummy\d{4}" target="_top" href="gridChannel.php?.+?&ch=(\d{4})">(.+?)</a>}m
+TITLE_PATTERN = %r{<a .*?href="/genre/detail.php3\?.*?&hsid=\d{4}\d{2}\d{2}(\d{4})\d{3}" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
+
+def parse_channels(html)
+  result = []
+
+  # Half
+  html = html[0, html.length / 2]
+
+  html.scan(CHANNEL_PATTERN) do 
+    result << Channel.new($1.to_i, $2.strip.gsub(%r{</?b>}, ''))
   end
 
   result
 end
 
+def parse_programs(channels_map, html)
+  prev_hour = 0
+  tommorow = false
+  html.scan(TITLE_PATTERN) do
+    ch = $1.to_i
+    start_hour, start_min, last_hour, last_min = $2.to_i, $3.to_i, $4.to_i, $5.to_i
+    title = $6.gsub(/<.+?>/, '')
+
+    if start_hour == 0
+      tommorow = true
+    end
+
+    if tommorow
+      start_hour += 24
+      last_hour += 24
+    elsif start_hour > last_hour
+      last_hour += 24
+    end
+
+    show = Show.new(start_hour, start_min, last_hour, last_min, title)
+    # p show
+    channels_map[ch] << show
+  end
+end
+
+# Main
 require 'open-uri'
 
-uri = "http://www.ontvjapan.com/program/gridOneday.php?tikicd=0#{ARGV.shift}"
+uri = if ARGV.empty?
+        "http://www.ontvjapan.com/program/gridOneday.php"
+      else
+        "http://www.ontvjapan.com/program/gridOneday.php?tikicd=#{ARGV.shift}"
+      end
 
-str = open(uri).read
+# uri = 'ontv.html'
+data = open(uri).read
+File.open('ontv.html', 'w').write(data)
 
-html = euc_to_utf8(str)
+html = Iconv.to_utf8(data)
 
-File.open('a.html', 'w').write(str)
+channels = parse_channels(html)
 
-# html = euc_to_utf8(open("ontv.html").read)
-
-CHANNEL_ORDER_PATTERN = %r{<a name="dummy\d+" target="_top" href="gridChannel.php.*?ch=(\d{4})">}
-CHANNEL_PATTERN = %r{<OPTION VALUE="/program/gridOneday.php.*?#(\d+)" >(.+?)</OPTION>}
-PROGRAM_PATTERN = %r{<span class="style_title"><a .*?href="/genre/detail.php3.*?&hsid=\d{6}(\d{2})(\d{4})\d{3}" target=_self title="(\d+):(\d+)-\d+:\d+.*?">(.+?)</a></span><br>}
-
-channel_order = []
-channels = []
-programs = {}
-
-target = :channel
-
-today = Time.now
-
-html.each do |ln|
-  ch = nil
-
-  if target == :channel and ln =~ CHANNEL_PATTERN
-    ch = $1.to_i
-    channels[ch] = $2
-  elsif target == :channel and ln =~ CHANNEL_ORDER_PATTERN
-    channel_order << $1.to_i
-  elsif ln =~ PROGRAM_PATTERN
-    target = :program
-    day, ch, hour, min = *( [$1, $2, $3, $4].collect do |i| i.to_i end )
-    title = $5.gsub(/<.*?>/, '')
-
-    if day != today.day
-      next
-    end
-
-    programs[ch] ||= {}
-    programs[ch][hour] ||= []
-
-    programs[ch][hour] << "<strong>%02d:%02d</strong><br/>%s" % [hour, min, title]
-  end
+channels_map = {}
+channels.each do |ch|
+  channels_map[ch.number] = ch
 end
+parse_programs(channels_map, html)
 
-print(open('table-header.html').read)
-
-puts("<table id='channels'><tr><th class='column'></th>")
-
-channel_order.each do |i|
-  puts("<th class='channel'>#{channels[i]}</th>")
-end
-
-puts("</tr></table>")
-
-hours = []
-24.times do |i|
-  hours << (4 + i) % 24
-end
-
-puts("<table id='programs'>")
-hours.each do |hour|
-  row = if hour & 1 == 1
-          'odd'
-        else
-          'even'
-        end
-  puts "<tr class='#{row}'><th class='column' id='#{hour}'>#{hour}</th>"
-  channel_order.each do |ch|
-    back = false
-
-    puts "<td>"
-    h = hour
-    until programs[ch][h]
-      h = (h - 1) % 24
-      back = true
-    end
-
-    program = if back
-                programs[ch][h].last
-              else
-                programs[ch][h].join("<br />")
-              end
-
-    puts "#{program}</td>"
-  end
-  puts "</tr>"
-end
-
-print <<END
-</table>
-</body>
-</html>
-END
-
+require 'erb'
+tmpl = ERB.new(File.open('table-tmpl.html').read)
+print tmpl.result(binding)

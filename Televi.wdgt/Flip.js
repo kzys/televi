@@ -15,7 +15,7 @@ Flip.showBack = function()
         
     if (window.widget)
         setTimeout ('widget.performTransition();', 0);  
-}
+};
 
 Flip.hideBack = function()
 {
@@ -25,22 +25,22 @@ Flip.hideBack = function()
     if (window.widget)
         widget.prepareForTransition("ToFront");
                 
-    back.style.display="none";
-    front.style.display="block";
+    back.style.display = "none";
+    front.style.display = "block";
         
     if (window.widget)
         setTimeout ('widget.performTransition();', 0);
-}
+};
 
 Flip.shown = false;
 Flip.animation = {
-    duration:0,
-    starttime:0,
-    to:1.0,
-    now:0.0,
-    from:0.0,
-    firstElement:null,
-    timer:null
+    duration: 0,
+    starttime: 0,
+    to: 1.0,
+    now: 0.0,
+    from: 0.0,
+    firstElement: null,
+    timer: null
 };
 
 Flip.mousemove = function(event)
@@ -60,7 +60,7 @@ Flip.mousemove = function(event)
         
     animation.duration = 500;
     animation.starttime = starttime;
-    animation.firstElement = document.getElementById("flip");
+    animation.firstElement = document.getElementById("Flip");
     animation.timer = setInterval("Flip.animate();", 15);
     animation.from = animation.now;
     animation.to = 1.0;
@@ -68,14 +68,16 @@ Flip.mousemove = function(event)
     Flip.animation = animation;
     
     Flip.animate();
-    Flip.shown = true;
-}
+    // Flip.shown = true;
+};
 
-Flip.mouseexit = function(event)
-{    
-    if (! Flip.shown) {
-        return;
-    }
+Flip.mouseout = function(event)
+{
+    /*
+      if (! Flip.shown) {
+      return;
+      }
+    */
 
     var animation = Flip.animation;
     if (animation.timer != null) {
@@ -87,16 +89,16 @@ Flip.mouseexit = function(event)
     
     animation.duration = 500;
     animation.starttime = starttime;
-    animation.firstElement = document.getElementById ('flip');
-    animation.timer = setInterval ("Flip.animate();", 13);
+    animation.firstElement = document.getElementById('Flip');
+    animation.timer = setInterval("Flip.animate();", 13);
     animation.from = animation.now;
     animation.to = 0.0;
     
     Flip.animation = animation;
     
     Flip.animate();
-    Flip.shown = false;
-}
+    // Flip.shown = false;
+};
         
 Flip.animate = function()
 {
@@ -119,24 +121,25 @@ Flip.animate = function()
     animation.firstElement.style.opacity = animation.now;
 
     Flip.animation = animation;
-}
+};
 
 Flip.limit3 = function(a, b, c)
 {
     return a < b ? b : (a > c ? c : a);
-}
+};
 
 Flip.computeNextFloat = function(from, to, ease)
 {
     return from + (to - from) * ease;
-}
+};
 
 Flip.enterflip = function(event)
 {
-    document.getElementById('flipRollie').style.display = 'block';
-}
+    document.getElementById('FlipRollie').style.display = 'block';
+};
 
 Flip.exitflip = function(event)
 {
-    document.getElementById('flipRollie').style.display = 'none';
-}
+    document.getElementById('FlipRollie').style.display = 'none';
+};
+    

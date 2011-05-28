@@ -4,105 +4,103 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 
-    <script type="text/javascript" src="Flip.js"></script>
+    <script type="text/javascript" src="flip.js"></script>
     <script type="text/javascript" src="main.js"></script>
 
+    <link rel="stylesheet" href="flip.css" type="text/css" />
     <link rel="stylesheet" href="basic.css" type="text/css" />
-    <title>Televi</title>
+    <title>Televi Widget</title>
   </head>
 
-  <body onload="setup();">
-    <div id="front"
-         onmousemove="Flip.mousemove(event);" onmouseout="Flip.mouseexit(event);">
-
+  <body onload="setup()">
+    <div id="front" onmousemove="Flip.mousemove(event);" onmouseout="Flip.mouseout(event);">
       <iframe id="inner" src="loading.html" scrolling="no"></iframe>
 
       <div class="navigation">
       <script type="text/javascript">
         for (var i = 0; i < 24; i++) {
-          var hour = (i + 4) % 24;
-          document.write('<a onclick="scrollToHour(' + hour + ')" >' + hour + '</a>');
+          document.write('<a onclick="scrollToHour(' + (i + 5) + ')" >' + ((i + 5) % 24) + '</a>');
         }
       </script>
       <a onclick="scrollToNow()">N</a>
-      <a onclick="forceUpdateTable()">U</a>
+      <a onclick="updateTable()">U</a>
       </div>
 
-      <div class="flip" id="flip"
+      <div class="Flip" id="Flip"
            onclick="Flip.showBack(event);"
            onmouseover="Flip.enterflip(event);" onmouseout="Flip.exitflip(event);"></div>
-      <div class="flip" id="flipRollie"></div>
+      <div class="Flip" id="FlipRollie"></div>
     </div>
 
     <div id="back">
       <div class="left">
-        <h1>Televi 0.1</h1>
-
         <form>
-          地域:
+          地域 :<br/>
           <select name="state"
                 onchange="changeState(this.options[this.selectedIndex].value)">
-            <option>都道府県を選択してください</option>
-	    <option value="001">北海道</option>
-	    <option value="101">青森</option>　
-	    <option value="102">秋田</option>　
-	    <option value="103">岩手</option>　
-	    <option value="104">山形</option>　
-	    <option value="105">宮城</option>　
-	    <option value="106">福島</option>　
-	    <option value="002">東京</option>　
-	    <option value="201">埼玉</option>　
-	    <option value="202">千葉</option>　
-	    <option value="203">神奈川</option>　
-	    <option value="204">群馬</option>　
-	    <option value="205">栃木</option>　
-	    <option value="206">茨城</option>　
-	    <option value="301">山梨</option>　
-	    <option value="302">新潟</option>　
-	    <option value="303">長野</option>　
-	    <option value="401">静岡</option>　
-	    <option value="003">愛知</option>　
-	    <option value="402">岐阜</option>　
-	    <option value="403">三重</option>　
-	    <option value="501">富山</option>　
-	    <option value="502">石川</option>　
-	    <option value="503">福井</option>　
-	    <option value="004">大阪</option>　
-	    <option value="601">京都</option>　
-	    <option value="602">兵庫</option>　
-	    <option value="603">奈良</option>　
-	    <option value="604">和歌山</option>　
-	    <option value="605">滋賀</option>　
-	    <option value="701">岡山</option>　
-	    <option value="702">広島</option>　
-	    <option value="703">鳥取</option>　
-	    <option value="704">島根</option>　
-	    <option value="705">山口</option>　
-	    <option value="801">香川</option>　
-	    <option value="802">徳島</option>　
-	    <option value="803">愛媛</option>　
-	    <option value="804">高知</option>　
-	    <option value="005">福岡</option>　
-	    <option value="901">佐賀</option>　
-	    <option value="902">鹿児島</option>　
-	    <option value="903">宮崎</option>　
-	    <option value="904">大分</option>　
-	    <option value="905">熊本</option>　
-	    <option value="906">長崎</option>　
-	    <option value="A01">沖縄</option>
+            <option>地域を選択してください</option>
+	    <option value="0001">北海道</option>
+	    <option value="0101">青森</option>　
+	    <option value="0102">秋田</option>　
+	    <option value="0103">岩手</option>　
+	    <option value="0104">山形</option>　
+	    <option value="0105">宮城</option>　
+	    <option value="0106">福島</option>　
+	    <option value="0002">東京</option>　
+	    <option value="0201">埼玉</option>　
+	    <option value="0202">千葉</option>　
+	    <option value="0203">神奈川</option>　
+	    <option value="0204">群馬</option>　
+	    <option value="0205">栃木</option>　
+	    <option value="0206">茨城</option>　
+	    <option value="0301">山梨</option>　
+	    <option value="0302">新潟</option>　
+	    <option value="0303">長野</option>　
+	    <option value="0401">静岡</option>　
+	    <option value="0003">愛知</option>　
+	    <option value="0402">岐阜</option>　
+	    <option value="0403">三重</option>　
+	    <option value="0501">富山</option>　
+	    <option value="0502">石川</option>　
+	    <option value="0503">福井</option>　
+	    <option value="0004">大阪</option>　
+	    <option value="0601">京都</option>　
+	    <option value="0602">兵庫</option>　
+	    <option value="0603">奈良</option>　
+	    <option value="0604">和歌山</option>　
+	    <option value="0605">滋賀</option>　
+	    <option value="0701">岡山</option>　
+	    <option value="0702">広島</option>　
+	    <option value="0703">鳥取</option>　
+	    <option value="0704">島根</option>　
+	    <option value="0705">山口</option>　
+	    <option value="0801">香川</option>　
+	    <option value="0802">徳島</option>　
+	    <option value="0803">愛媛</option>　
+	    <option value="0804">高知</option>　
+	    <option value="0005">福岡</option>　
+	    <option value="0901">佐賀</option>　
+	    <option value="0902">鹿児島</option>　
+	    <option value="0903">宮崎</option>　
+	    <option value="0904">大分</option>　
+	    <option value="0905">熊本</option>　
+	    <option value="0906">長崎</option>　
+	    <option value="0A01">沖縄</option>
           </select>
         </form>
       </div>
 
-      <div class="credit">
-        番組表は ONTV Japan から取得しています。<br />
-        <a onclick="widget.openURL('http://www.ontvjapan.com/')">
-          <img src="ontv.png" alt="ONTV Japan" />
-        </a><br />
-        Copyright &copy; 2005 KATO Kazuyoshi
-      </div>
+      <div class="right">        
+        番組表は ONTV Japan から取得しています。<br /> 
+        <img onclick="widget.openURL('http://www.ontvjapan.com/')"
+             src="ontv.png" alt="ONTV Japan" />
+        <br /><br />
+        Copyright &copy; 2005 KATO Kazuyoshi<br /><br />
+        <img src="solodesign.png" alt="designed by solo.design"/>
 
-      <a class="button" onclick="doneClicked();">Done</a>
+        <img src="button.png" alt="Done" id="done" onclick="doneClicked();" />
+      </div>
+      
     </div>
   </body>
 

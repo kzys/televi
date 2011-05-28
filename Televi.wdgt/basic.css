@@ -1,89 +1,95 @@
 body {
-  color: #333;
+  font: normal 10px 'Lucida Grande';
   margin: 0;
-  padding: 5px;
-
-  font: bold 12px 'Lucida Grande'; 
-  background: url(Default.png);
+  padding: 0;
+  width: 660px;
+  height: 200px;
 }
-
+/* front */
+#front {
+  background: url(Default.png);
+  padding: 4px;
+  height: 220px;
+}
 iframe {
-  width: 640px;
+  margin: 2px 0 0 0;
+  width: 660px;
   display: block;
-  height: 140px;
+  height: 130px;
   overflow: hidden;
 }
-
+/* navigation bar */
 .navigation {
-  font: bold 15px 'Helvetica Neue';
   text-align: center;
-  padding: 2px;
-  border-top: 1px solid #999;
+  margin: 16px 0px;
+  font: bold 14px 'Helvetica Neue';
 }
 .navigation a {
-  margin: 0 5px;
-  color: #999;
-  text-decoration: none;
+  color: #336;
+  padding: 0px 5px;
+  cursor: default;
 }
 .navigation a:hover {
-  color: #000;
+  color: #003;
 }
 
-#front {
+/* Table */
+th {
+  width: 20px;
 }
-
-.flip {
-  position:absolute;
-  bottom: 15px;
-  right:  15px;
-  width:  13px;
-  height: 13px;
+td {
+  width: 80px;
 }
-#flip {
-  opacity:0;
-  background:url(file:///System/Library/WidgetResources/ibutton/black_i.png) no-repeat top left;
-  z-index: 20;
+#channels {
+  position: fixed;
+  top: 0px;
+  font: bold 10px 'Lucida Grande';
+  text-align: center;
+  margin: 0;
+  color: #fff;
 }
-#flipRollie {
-  display:none;
-  opacity:0.25;
-  background:url(file:///System/Library/WidgetResources/ibutton/black_rollie.png) no-repeat top left;
-  z-index: 10;
+#channels td {
+  height: 16px;
+  padding: 0 2px 0 5px;
 }
-
-#back {
-  padding: 10px 20px;
+#programs {
+  margin-top: 20px;
 }
-#back h1 {
-  color: #000;
-  margin: 5px;
+#programs th {
+  color: #fff;
+  font: bold 20px 'Helvetica Neue';
+  vertical-align: top;
+}
+#programs td {
+  height: 200px;
+  vertical-align: top;
+  /* background: url(Line.png) 0px 0px no-repeat; */
+  padding: 0 2px 0 5px;
+}
+ul {
+  list-style-type: none;
   padding: 0;
-  font-size: 20px;
+  margin: 0;
+}
+/* back */
+#back {
+  font: normal 12px 'Lucida Grande';
+  background: url(Back.png);
+  padding: 16px 20px;
+  height: 220px;
+  color: #fff;
 }
 #back .left {
-  width: 40%;
+  width: 30%;
   float: left;
 }
-#back .credit {
+#back .right {
   width: 50%;
+  margin-top: 12px;
   float: right;
-  line-height: 30px;
 }
-a.button {
-  font-size: 10px;
+#back #done {
   position: absolute;
-  bottom: 20px;
   right: 20px;
-  text-align: left;
-  border: 1px solid #ccc;
-  border-color: #ccc #666 #666 #ccc;
-  color: #333;
-  background: url(button.png);
-  padding: 1px 8px;
-}
-a.button:hover {
-  border-color: #ccc #333 #333 #ccc;
-}
-a.button:active {
-  border-color: #666 #ccc #ccc #666;
+  bottom: 20px;
 }
