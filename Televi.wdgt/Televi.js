@@ -6,10 +6,11 @@
   This file is released under the terms of the MIT X11 license.
 */
 
-var width_ = 7;
-var state_ = '';
-var system_ = null;
+var width_;
+var state_;
+var system_ = false;
 var isBack_ = false;
+var home_;
 
 // debug = function(s) { alert(s) };
 debug = function(s) {};
@@ -41,31 +42,46 @@ function scrollToNow()
 
 function afterUpdateHTML()
 {
-    debug('afterUpdateHTML');
+    debug('>> afterUpdateHTML');
 
+    var path = 'file://' + home_ + '/Library/Application Support/Televi/';
+    debug(path)
+    
     if (! isBack_) {
-        frames['table'].location.href = 'table.html';
+        frames['table'].location.href = path + 'table.html';
     } else {
-        frames['channels'].location.href = 'channels.html';
+        frames['channels'].location.href = path + 'channels.html';
     }
 
-    system_ = null;
+    system_ = false;
 }
 
 function updateHTML()
 {
-    debug('updateHTML');
+    debug('>> updateHTML');
 
     if (! isBack_) {
         frames['table'].location.href = 'loading.html';
     }
 
-    if (window.widget && system_ == null) {
-        debug('call ruby!');
+    if (window.widget && system_ == false) {
+        debug('Call ruby!');
         system_ = widget.system("/usr/bin/ruby generate-html.rb " + state_,
                                 afterUpdateHTML);
+        system_.onreaderror = function(s) {
+            var e;
+            if (! isBack_) {
+                e = frames['table'].document.getElementById('message');                
+            } else {
+                e = frames['channels'].document.getElementById('message');                
+            }
+            
+            if (e) {
+                e.innerHTML = s;
+            }
+        };
     } else {
-        showTableAndScroll();
+        ;
     }
 }
 
@@ -89,18 +105,29 @@ function onshow()
     debug('onshow{');
 
     if (! isBack_) {
-        debug('front');
-        if (! File.exist('table.html')) {
+        var now = new Date();
+
+        for (var i = 0; i < 24; i++) {
+            if (i == now.getHours()) {
+                $('navi-' + i).style.color = '#fff';
+            } else {
+                $('navi-' + i).style.color = '#336';
+            }
+        }
+        
+        var path = home_ + '/Library/Application Support/Televi/';
+        debug(path);
+        if (! File.exist(path + 'table.html')) {
+            debug('Not found');
             updateHTML();
-        } else if (needsUpdate(File.mtime('table.html'), new Date())) {
+        } else if (needsUpdate(File.mtime(path + 'table.html'), now)) {
+            debug('Need to update');
             updateHTML();
         } else {
             if (frames['table'].location.href.match(/\/table\.html$/)) {
                 scrollToNow();
-                debug('scroll');
             } else {
-                frames['table'].location.href = 'table.html';
-                debug('table.html');
+                frames['table'].location.href = 'file:' + path + 'table.html';
             }
         }
     }
@@ -114,16 +141,15 @@ function onhide()
 
 function setup()
 {
-    debug('setup{');
+    debug('>> setup');
 
-    var back = document.getElementById("back");
+    var back = $("back");
     back.style.display = 'none';
 
-    if (window.widget) {
+    if (widget) {
         widget.onshow = onshow;
         widget.onhide = onhide;
 
-        debug('  load preferences');
         width_ = widget.preferenceForKey("width");
         if (width_) {
             width_ = parseInt(width_);
@@ -135,26 +161,22 @@ function setup()
             state_ = '';
         }
 
-        /*
-        if (File.exist('table.html')) {
-            frames['table'].location.href = 'table.html';
-        }
-        */
-    }
+        home_ = widget.system('/bin/echo -n $HOME', null).outputString;
+
+        setTimeout("onshow();", 1500);
+   }
 
     resizeWidget();
-
-    debug('}')
 }
 
 function resizeWidget()
 {
     debug('resizeWidget');
     if (window.widget) {
-        window.resizeTo(88 * width_ + 28, 200);
+        window.resizeTo(88 * width_ + 28, 180);
     }
-    document.getElementById('table').style.width = (width_ * 88) + 'px';
-    document.getElementById('front').style.width = (width_ * 88) + 'px';
+    $('table').style.width = (width_ * 88) + 'px';
+    $('front').style.width = (width_ * 88) + 'px';
 }
 
 function changeState(s)
@@ -174,9 +196,9 @@ Flip.beforeFlip = function()
 
     isBack_ = true;
 
-    document.getElementById('width').value = width_ + '';
+    $('width').value = width_ + '';
     if (window.widget) {
-        window.resizeTo(640, 200);
+        window.resizeTo(640, 180);
     }
 }
 
@@ -186,7 +208,11 @@ function doneClicked()
 
     Flip.hideBack();
 
-    width_ = parseInt(document.getElementById('width').value);
+    width_ = parseInt($('width').value);
+    if (width_ > 10) {
+        width_ = 10;
+    }
+    
     if (window.widget) {
         widget.setPreferenceForKey(width_, "width");
     }
@@ -202,4 +228,12 @@ function openONTV(path)
         widget.openURL('http://www.ontvjapan.com' + path);
     else
         alert(path);
+}
+
+function writeNavigationHours()
+{
+    for (var i = 0; i < 24; i++) {
+        var hour = ((i + 5) % 24);
+        document.write('<a onclick="scrollToHour(' + (i + 5) + ')" id="navi-' + hour + '">' + hour + '</a>');
+    }
 }

@@ -70,7 +70,6 @@ class Show
   alias_method :min,  :start_min
 end
 
-# CHANNEL_PATTERN = %r{<a name="dummy\d{4}" target="_top" href="gridChannel.php?.+?&ch=(\d{4})">(.+?)</a>}m
 CHANNEL_PATTERN = %r{<OPTION VALUE="/program/gridOneday.php\?.+?" >(.+?)</OPTION><!--(\d{4})-->}
 TITLE_PATTERN = %r{<a .*?href="(/genre/detail.php3\?.*?&hsid=\d{4}\d{2}(\d{2})(\d{4})\d{3})" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
 TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><b>24</b></TD>}
@@ -89,14 +88,38 @@ def create_channels(html)
   result
 end
 
+def parse_summery(lines)
+  subtitle = nil
+
+  while ln = lines.shift
+    case ln
+    when %r{<span class="style_corner">(.*?)</span>}
+      corner = $1
+      
+      return (if subtitle and !corner.empty?
+                "#{subtitle} &raquo;&raquo; #{corner}"
+              elsif subtitle or !corner.empty?
+                "#{subtitle}#{corner}"
+              else
+                '-'
+              end)
+    when %r{<span class="style_subtitle">(.*?)</span>}
+      subtitle = $1
+    end
+  end
+end
+
 def parse_programs(channels_map, html, today)
   tommorow = false
 
-  html.each do |ln|
-    if md = ln.match(TITLE_PATTERN)
-      day, ch, start_hour, start_min, last_hour, last_min = *(md[2, 6].collect do |i| i.to_i end)
-      title = "<a onclick=\"top.openONTV('#{md[1]}')\">#{md[8].gsub(/<.+?>/, '')}</a>"
+  lines = html.split(/\n/)
 
+  while ln = lines.shift
+    if md = ln.match(TITLE_PATTERN)
+      summery = parse_summery(lines)
+      title = "<a onclick=\"top.openONTV('#{md[1]}')\" title=\"#{summery}\">#{md[8].gsub(/<.+?>/, '')}</a>"
+
+      day, ch, start_hour, start_min, last_hour, last_min = *(md[2, 6].collect do |i| i.to_i end)
       if tommorow
         start_hour += 24
         last_hour += 24
@@ -113,11 +136,19 @@ def parse_programs(channels_map, html, today)
 end
 
 # Main
-uri = if ARGV.empty?
+
+require 'pathname'
+
+path = Pathname.new("~/Library/Application Support/Televi").expand_path
+unless path.exist?
+  path.mkdir
+end
+
+uri = (if ARGV.empty?
         "http://www.ontvjapan.com/program/gridOneday.php?"
       else
         "http://www.ontvjapan.com/program/gridOneday.php?tikicd=#{ARGV.shift}"
-      end
+      end)
 
 html = nil
 page = 1
@@ -126,18 +157,21 @@ channels = []
 channels_map = {}
 
 loop do
-  # $stderr.print(page, " ")
+  $stderr.printf("Getting page %d...\n", page)
 
   data = `./nsurlget '#{uri}&page=#{page}'`
+  # File.open("debug-#{page}.html", 'w').write(data)
   html = Iconv.to_utf8(data)
 
   if channels.empty?
+    $stderr.printf("Parsing channels...\n", page)
     channels = create_channels(html)
     channels.each do |ch|
       channels_map[ch.number] = ch
     end
   end
 
+  $stderr.printf("Parsing page %d...\n", page)
   parse_programs(channels_map, html, Time.now.day)
 
   if html =~ NEXT_PAGE_PATTERN
@@ -146,12 +180,11 @@ loop do
     break
   end
 end
-puts
 
 require 'erb'
 
-tmpl = ERB.new(File.open('table-tmpl.html').read)
-File.open('table.html', 'w').print(tmpl.result(binding))
+tmpl = ERB.new(File.open('tmpl/table.rhtml').read)
+File.open("#{path}/table.html", 'w').print(tmpl.result(binding))
 
-tmpl = ERB.new(File.open('channels-tmpl.html').read)
-File.open('channels.html', 'w').print(tmpl.result(binding))
+tmpl = ERB.new(File.open('tmpl/channels.rhtml').read)
+File.open("#{path}/channels.html", 'w').print(tmpl.result(binding))

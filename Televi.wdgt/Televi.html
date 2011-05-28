@@ -1,31 +1,28 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
-	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <script type="text/javascript" src="prototype.js"></script>
 
     <script type="text/javascript" src="file.js"></script>
     <script type="text/javascript" src="flip.js"></script>
-    <script type="text/javascript" src="main.js"></script>
+
+    <script type="text/javascript" src="Televi.js"></script>
 
     <link rel="stylesheet" href="flip.css" type="text/css" />
-    <link rel="stylesheet" href="basic.css" type="text/css" />
+    <link rel="stylesheet" href="Televi.css" type="text/css" />
+    
     <title>Televi Widget</title>
   </head>
 
-  <body onload="setup()">
+  <body onload=";">    
     <div id="front" onmousemove="Flip.mousemove(event);" onmouseout="Flip.mouseout(event);">
       <div id="left"></div>
       <iframe name="table" src="table.html" id="table" scrolling="no"></iframe>
 
       <div class="navigation">
-        <script type="text/javascript">
-        for (var i = 0; i < 24; i++) {
-          document.write('<a onclick="scrollToHour(' + (i + 5) + ')" >' + ((i + 5) % 24) + '</a>');
-        }
-        </script>
-        <a onclick="scrollToNow()">N</a>
-        <a onclick="updateHTML()">U</a>
+        <script type="text/javascript">writeNavigationHours();</script>                            
+        <a onclick="updateHTML()" title="番組表を更新">U</a>
         <div id="right"></div>
       </div>
 
@@ -91,26 +88,29 @@
 	    <option value="0A01">沖縄</option>
           </select>
 
-          表示するチャンネル数: <input type="text" id="width" value="7" size="2" /> ch.
+          <br />表示するチャンネル数: <input type="text" id="width" value="7" size="2" /> ch.
         </form>
         <iframe name="channels" src="channels.html" scrolling="no"></iframe>
       </div>
-
+      
       <div class="right">
         番組表は ONTV Japan から取得しています。<br />
         <img onclick="widget.openURL('http://www.ontvjapan.com/')"
-             src="ontv.png" alt="ONTV Japan" />
-        <br />
+             src="Images/ontv.png" alt="ONTV Japan" />
+        <br /><br />
         Copyright &copy; 2005
-        <a onclick="widget.openURL('http://8-p.info/')">KATO Kazuyoshi</a><br /><br />
+        <a onclick="widget.openURL('http://8-p.info/')">KATO Kazuyoshi</a><br />
 
-	<img src="solodesign.png" alt="designed by solo.design"
+	<img src="Images/solodesign.png" alt="designed by solo.design"
              onclick="widget.openURL('http://solodesign.jp/')" />
       </div>
-
-      <img src="button.png" alt="Done" id="done" onclick="doneClicked();" />
-
+      <img src="Images/button.png" alt="Done" id="done" onclick="doneClicked();" />
+      
     </div>
+
+    <script type="text/javascript">
+      setup();
+    </script>
   </body>
 
 </html>

@@ -4,16 +4,18 @@
   <dict>
     <key>AllowSystem</key>
     <true/>
+    <key>AllowFileAccessOutsideOfWidget</key>
+    <true/>
     <key>CFBundleIdentifier</key>
     <string>info.8-p.Dashboard.Televi</string>
     <key>CFBundleName</key>
     <string>Televi.wdgt</string>
     <key>CFBundleVersion</key>
-    <string>0.7</string>
+    <string>0.8</string>
     <key>DefaultImage</key>
     <string>Default.png</string>
     <key>MainHTML</key>
-    <string>index.html</string>
+    <string>Televi.html</string>
     <key>CloseBoxInsetX</key>
     <integer>5</integer>
     <key>CloseBoxInsetY</key>
