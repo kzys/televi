@@ -95,7 +95,7 @@ def parse_programs(channels_map, html, today)
   html.each do |ln|
     if md = ln.match(TITLE_PATTERN)
       day, ch, start_hour, start_min, last_hour, last_min = *(md[2, 6].collect do |i| i.to_i end)
-      title = "<a onclick=\"openONTV('#{md[1]}')\">#{md[8].gsub(/<.+?>/, '')}</a>"
+      title = "<a onclick=\"top.openONTV('#{md[1]}')\">#{md[8].gsub(/<.+?>/, '')}</a>"
 
       if tommorow
         start_hour += 24
@@ -128,7 +128,7 @@ channels_map = {}
 loop do
   # $stderr.print(page, " ")
 
-  data = `./nsurlget '#{uri}&page=#{page}'`  
+  data = `./nsurlget '#{uri}&page=#{page}'`
   html = Iconv.to_utf8(data)
 
   if channels.empty?

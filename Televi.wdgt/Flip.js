@@ -12,8 +12,7 @@ Flip.beforeFlip = function(){};
 
 Flip.showBack = function()
 {
-    Flip.beforeFlip();
-
+    // Hide Filp Rollie
     Flip.exitflip();
 
     var front = document.getElementById("front");
@@ -25,8 +24,10 @@ Flip.showBack = function()
     front.style.display="none";
     back.style.display="block";
 
+    Flip.beforeFlip();
+
     if (window.widget)
-        setTimeout ('widget.performTransition();', 0);
+        setTimeout('widget.performTransition();', 1);    
 };
 
 Flip.hideBack = function()

@@ -195,3 +195,11 @@ function doneClicked()
 
     isBack_ = false;
 }
+
+function openONTV(path)
+{
+    if (window.widget)
+        widget.openURL('http://www.ontvjapan.com' + path);
+    else
+        alert(path);
+}
