@@ -1,3 +1,9 @@
+/*
+  This file is released under the terms of the MIT X11 license.
+
+  Copyright (C) 2005 KATO Kazuyoshi
+*/
+
 Flip = new Object();
 
 Flip.showBack = function()

@@ -1,10 +1,16 @@
+=begin
+This file is released under the terms of the MIT X11 license.
+
+Copyright (C) 2005 KATO Kazuyoshi
+=end
+
 require 'iconv'
 
 class Iconv
   def self.to_utf8(src)
     ic = Iconv.new('UTF-8', 'EUC-JP')
     result = ''
-    
+
     begin
       result << ic.iconv(src)
     rescue Iconv::IllegalSequence => e
@@ -36,7 +42,7 @@ class Channel
            else
              show.last_hour - 1
            end
-    
+
     # regist
     (show.start_hour..last).each do |h|
       @programs[h] ||= []
@@ -63,7 +69,8 @@ class Show
 end
 
 CHANNEL_PATTERN = %r{<a name="dummy\d{4}" target="_top" href="gridChannel.php?.+?&ch=(\d{4})">(.+?)</a>}m
-TITLE_PATTERN = %r{<a .*?href="/genre/detail.php3\?.*?&hsid=\d{4}\d{2}\d{2}(\d{4})\d{3}" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
+TITLE_PATTERN = %r{<a .*?href="/genre/detail.php3\?.*?&hsid=\d{4}\d{2}(\d{2})(\d{4})\d{3}" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
+TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><b>24</b></TD>}
 
 def parse_channels(html)
   result = []
@@ -71,35 +78,33 @@ def parse_channels(html)
   # Half
   html = html[0, html.length / 2]
 
-  html.scan(CHANNEL_PATTERN) do 
+  html.scan(CHANNEL_PATTERN) do
     result << Channel.new($1.to_i, $2.strip.gsub(%r{</?b>}, ''))
   end
 
   result
 end
 
-def parse_programs(channels_map, html)
-  prev_hour = 0
+def parse_programs(channels_map, html, today)
   tommorow = false
-  html.scan(TITLE_PATTERN) do
-    ch = $1.to_i
-    start_hour, start_min, last_hour, last_min = $2.to_i, $3.to_i, $4.to_i, $5.to_i
-    title = $6.gsub(/<.+?>/, '')
 
-    if start_hour == 0
+  html.each do |ln|
+    if md = ln.match(TITLE_PATTERN)
+      day, ch, start_hour, start_min, last_hour, last_min = *(md[1, 6].collect do |i| i.to_i end)
+      title = md[7].gsub(/<.+?>/, '')
+
+      if tommorow
+        start_hour += 24
+        last_hour += 24
+      elsif start_hour > last_hour
+        last_hour += 24
+      end
+
+      show = Show.new(start_hour, start_min, last_hour, last_min, title)
+      channels_map[ch] << show
+    elsif ln =~ TOMMOROW_PATTERN
       tommorow = true
     end
-
-    if tommorow
-      start_hour += 24
-      last_hour += 24
-    elsif start_hour > last_hour
-      last_hour += 24
-    end
-
-    show = Show.new(start_hour, start_min, last_hour, last_min, title)
-    # p show
-    channels_map[ch] << show
   end
 end
 
@@ -112,9 +117,7 @@ uri = if ARGV.empty?
         "http://www.ontvjapan.com/program/gridOneday.php?tikicd=#{ARGV.shift}"
       end
 
-# uri = 'ontv.html'
 data = open(uri).read
-# File.open('ontv.html', 'w').write(data)
 
 html = Iconv.to_utf8(data)
 
@@ -124,7 +127,7 @@ channels_map = {}
 channels.each do |ch|
   channels_map[ch.number] = ch
 end
-parse_programs(channels_map, html)
+parse_programs(channels_map, html, Time.now.day)
 
 require 'erb'
 tmpl = ERB.new(File.open('table-tmpl.html').read)

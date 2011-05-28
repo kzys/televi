@@ -1,3 +1,9 @@
+/*
+  This file is released under the terms of the MIT X11 license.
+
+  Copyright (C) 2005 KATO Kazuyoshi
+*/
+
 /* File */
 File = new Object();
 
@@ -8,7 +14,7 @@ File.exist = function(path) {
         return false;
     }
 };
-    
+
 File.mtime = function(path) {
     var s = widget.system("/usr/bin/ruby -e 'puts File.mtime(ARGV.shift).tv_sec * 1000' " + path,
                           null).outputString;
@@ -17,7 +23,7 @@ File.mtime = function(path) {
 
 /* Main */
 var stateChanged_ = false;
-    
+
 function scrollToHour(hour) {
     var w = document.getElementById('inner').contentWindow;
     var e = w.document.getElementById(''+hour);
@@ -43,7 +49,7 @@ function changeState(value)
 }
 
 function showTableAndScroll()
-{ 
+{
     var f = document.getElementById('inner');
     if (f) {
         f.src = 'table.html';
@@ -53,7 +59,7 @@ function showTableAndScroll()
 function updateTable()
 {
     alert('updateTable');
-    
+
     var f = document.getElementById('inner');
     f.src = 'loading.html';
 
