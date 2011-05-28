@@ -4,6 +4,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
 
+    <script type="text/javascript" src="file.js"></script>
+    <script type="text/javascript" src="resize.js"></script>
     <script type="text/javascript" src="flip.js"></script>
     <script type="text/javascript" src="main.js"></script>
 
@@ -14,16 +16,18 @@
 
   <body onload="setup()">
     <div id="front" onmousemove="Flip.mousemove(event);" onmouseout="Flip.mouseout(event);">
-      <iframe id="inner" src="loading.html" scrolling="no"></iframe>
+      <div id="left"></div>
+      <iframe name="table" src="table.html" id="table" scrolling="no"></iframe>
 
       <div class="navigation">
-      <script type="text/javascript">
+        <script type="text/javascript">
         for (var i = 0; i < 24; i++) {
           document.write('<a onclick="scrollToHour(' + (i + 5) + ')" >' + ((i + 5) % 24) + '</a>');
         }
-      </script>
-      <a onclick="scrollToNow()">N</a>
-      <a onclick="updateTable()">U</a>
+        </script>
+        <a onclick="scrollToNow()">N</a>
+        <a onclick="updateHTML()">U</a>
+        <div id="right"></div>
       </div>
 
       <div class="Flip" id="Flip"
@@ -35,10 +39,10 @@
     <div id="back">
       <div class="left">
         <form>
-          地域 :<br/>
           <select name="state"
-                onchange="changeState(this.options[this.selectedIndex].value)">
-            <option>地域を選択してください</option>
+                        onchange="changeState(this.options[this.selectedIndex].value)"
+                        style="width:200px">
+            <option>地域</option>
 	    <option value="0001">北海道</option>
 	    <option value="0101">青森</option>　
 	    <option value="0102">秋田</option>　
@@ -87,7 +91,10 @@
 	    <option value="0906">長崎</option>　
 	    <option value="0A01">沖縄</option>
           </select>
+
+          表示するチャンネル数: <input type="text" id="width" value="7" size="2" /> ch.
         </form>
+        <iframe name="channels" src="channels.html" scrolling="no"></iframe>
       </div>
 
       <div class="right">
@@ -95,8 +102,11 @@
         <img onclick="widget.openURL('http://www.ontvjapan.com/')"
              src="ontv.png" alt="ONTV Japan" />
         <br />
-        Copyright &copy; 2005 KATO Kazuyoshi<br /><br />
-        <img src="solodesign.png" alt="designed by solo.design"/>
+        Copyright &copy; 2005
+        <a onclick="widget.openURL('http://8-p.info/')">KATO Kazuyoshi</a><br /><br />
+
+	<img src="solodesign.png" alt="designed by solo.design"
+             onclick="widget.openURL('http://solodesign.jp/')" />
       </div>
 
       <img src="button.png" alt="Done" id="done" onclick="doneClicked();" />

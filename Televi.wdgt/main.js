@@ -1,38 +1,37 @@
 /*
-  This file is released under the terms of the MIT X11 license.
+  Copyright (C) 2005 KATO Kazuyoshi <kzys@8-p.info>
+      All rights reserved.
+      This is free software with ABSOLUTELY NO WARRANTY.
 
-  Copyright (C) 2005 KATO Kazuyoshi
+  This file is released under the terms of the MIT X11 license.
 */
 
-/* File */
-File = new Object();
+var width_ = 7;
+var state_ = '';
+var system_ = null;
+var isBack_ = false;
 
-File.exist = function(path) {
-    if (window.widget) {
-        return widget.system('/bin/test -f ' + path, null).status == 0;
-    } else {
-        return false;
-    }
-};
-
-File.mtime = function(path) {
-    var s = widget.system("/usr/bin/ruby -e 'puts File.mtime(ARGV.shift).tv_sec * 1000' " + path,
-                          null).outputString;
-    return new Date(s);
-};
-
-/* Main */
-var stateChanged_ = false;
+// debug = function(s) { alert(s) };
+debug = function(s) {};
 
 function scrollToHour(hour) {
-    var w = document.getElementById('inner').contentWindow;
-    var e = w.document.getElementById(''+hour);
+    debug('scrollToHour');
 
-    w.scrollTo(0, e.offsetTop);
+    var w = frames['table'];
+    debug('w = ' + w);
+
+    var e = w.document.getElementById('hour-'+hour);
+    debug('e = ' + e);
+
+    if (e) {
+        frames['table'].scrollTo(0, e.offsetTop);
+    }
 }
 
 function scrollToNow()
 {
+    debug('scrollToNow');
+
     var hours = (new Date()).getHours();
     if (hours < 5) {
         hours += 24;
@@ -40,39 +39,33 @@ function scrollToNow()
     scrollToHour(hours);
 }
 
-function changeState(value)
+function afterUpdateHTML()
 {
-    if (window.widget) {
-        widget.setPreferenceForKey(value, "state");
-    }
-    stateChanged_ = true;
-}
+    debug('afterUpdateHTML');
 
-function showTableAndScroll()
-{
-    var f = document.getElementById('inner');
-    if (f) {
-        f.src = 'table.html';
-    }
-}
-
-function updateTable()
-{
-    alert('updateTable');
-
-    var f = document.getElementById('inner');
-    f.src = 'loading.html';
-
-    if (window.widget) {
-        var state = widget.preferenceForKey("state");
-        if (! state) {
-            state = '';
-        }
-
-        widget.system("/usr/bin/ruby generate-table.rb " + state + " > table.html",
-                      showTableAndScroll);
+    if (! isBack_) {
+        frames['table'].location.href = 'table.html';
     } else {
-        f.src = 'table.html';
+        frames['channels'].location.href = 'channels.html';
+    }
+
+    system_ = null;
+}
+
+function updateHTML()
+{
+    debug('updateHTML');
+
+    if (! isBack_) {
+        frames['table'].location.href = 'loading.html';
+    }
+
+    if (window.widget && system_ == null) {
+        debug('call ruby!');
+        system_ = widget.system("/usr/bin/ruby generate-html.rb " + state_,
+                                afterUpdateHTML);
+    } else {
+        showTableAndScroll();
     }
 }
 
@@ -93,23 +86,25 @@ function needsUpdate(mtime, now)
 
 function onshow()
 {
-    alert('onshow');
+    debug('onshow{');
 
-    if (! File.exist('table.html') ) {
-        updateTable();
-        return;
-    }
-
-    if ( needsUpdate(File.mtime('table.html'), new Date()) ) {
-        updateTable();
-    } else {
-        var f = document.getElementById('inner');
-        if (f.src.match(/\/table\.html$/)) { // already open?
-            scrollToNow();
+    if (! isBack_) {
+        debug('front');
+        if (! File.exist('table.html')) {
+            updateHTML();
+        } else if (needsUpdate(File.mtime('table.html'), new Date())) {
+            updateHTML();
         } else {
-            f.src = 'table.html';
+            if (frames['table'].location.href.match(/\/table\.html$/)) {
+                scrollToNow();
+                debug('scroll');
+            } else {
+                frames['table'].location.href = 'table.html';
+                debug('table.html');
+            }
         }
     }
+    debug('}onshow');
 }
 
 function onhide()
@@ -119,6 +114,8 @@ function onhide()
 
 function setup()
 {
+    debug('setup{');
+
     var back = document.getElementById("back");
     back.style.display = 'none';
 
@@ -126,18 +123,75 @@ function setup()
         widget.onshow = onshow;
         widget.onhide = onhide;
 
-        onshow();
+        debug('  load preferences');
+        width_ = widget.preferenceForKey("width");
+        if (width_) {
+            width_ = parseInt(width_);
+        } else {
+            width_ = 7;
+        }
+        state_ = widget.preferenceForKey("state");
+        if (! state_) {
+            state_ = '';
+        }
+
+        /*
+        if (File.exist('table.html')) {
+            frames['table'].location.href = 'table.html';
+        }
+        */
+    }
+
+    resizeWidget();
+
+    debug('}')
+}
+
+function resizeWidget()
+{
+    debug('resizeWidget');
+    if (window.widget) {
+        window.resizeTo(88 * width_ + 28, 200);
+    }
+    document.getElementById('table').style.width = (width_ * 88) + 'px';
+    document.getElementById('front').style.width = (width_ * 88) + 'px';
+}
+
+function changeState(s)
+{
+    state_ = s;
+    if (window.widget) {
+        widget.setPreferenceForKey(state_, "state");
+    }
+
+    frames['channels'].location.href = 'loading.html';
+    updateHTML();
+}
+
+Flip.beforeFlip = function()
+{
+    debug('Flip.beforeFlip');
+
+    isBack_ = true;
+
+    document.getElementById('width').value = width_ + '';
+    if (window.widget) {
+        window.resizeTo(640, 200);
     }
 }
 
 function doneClicked()
 {
+    debug('doneClicked');
+
     Flip.hideBack();
 
-    if (stateChanged_) {
-        stateChanged_ = false;
-        updateTable();
-    } else {
-        // setTimeout('scrollToNow();', 100); // Wait until done of flip
+    width_ = parseInt(document.getElementById('width').value);
+    if (window.widget) {
+        widget.setPreferenceForKey(width_, "width");
     }
+
+    resizeWidget();
+
+    isBack_ = false;
 }

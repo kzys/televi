@@ -7,63 +7,46 @@
     <title>Televi Time Table</title>
 
     <script type="text/javascript">
-      var widget = top.widget;
-
-      function scrollToNow_()
-      {
-        var hours = (new Date()).getHours();
-        if (hours < 5) {
-          hours += 24;
-        }
-        window.scrollTo(0, document.getElementById(''+hours).offsetTop);
-      }
-
       function openONTV(path)
       {
         if (window.widget)
-          widget.openURL('http://www.ontvjapan.com' + path);
+          top.widget.openURL('http://www.ontvjapan.com' + path);
         else
           alert(path);
       }
     </script>
   </head>
 
-  <body onload="scrollToNow_();">
-    <table id="channels">
-      <tr>
-        <th></th>
-        <% channels.each do |ch| %>
-        <td><%= ch.title %></td>
-        <% end %>
-      </tr>
-    </table>
+  <body onload="top.scrollToNow()">
+    <div class="channel" style="top:0px; left:0px; width:88px;">
+      <% 24.times do |hour| %>
+      <div class="hour" id="hour-<%= hour+5 %>"><%= (hour+5) % 24 %></div>
+     <% end %>
+   </div>
 
-    <table id="programs">
-      <% 24.times do |hour|; hour += 5 %>
-      <tr>
-        <th id="<%= hour %>"><%= hour % 24 %></th>
-        <% channels.each do |ch| %>
-        <td>
-          <ul>
-            <% (ch.fetch(hour) || []).each do |show| %>
-            <li>
-              <!-- time -->
-              <strong>
-              <%= "%02d:%02d -" % [show.start_hour, show.start_min] %>
-              <% if hour != show.hour %>
-              <%= "%02d:%02d" % [show.last_hour, show.last_min] %>
-              <% end %>
-              </strong><br />
-
-              <!-- title -->
-              <%= show.title %>
-            </li>
+    <% channels.each_with_index do |ch, i| %>
+    <div class="channel" style="top:0px; left:<%= i * 88 %>px; width:88px;"
+         id="channel-<%= ch.number %>">
+      <h1 style="width:88px"><%= ch.title %></h1>
+      <% 24.times do |hour| %>
+      <ul class="hour">
+        <% (ch.fetch(hour+5) || []).each do |show| %>
+        <li>
+          <!-- time -->
+          <strong>
+            <%= "%02d:%02d -" % [show.start_hour, show.start_min] %>
+            <% if hour != show.hour %>
+            <%= "%02d:%02d" % [show.last_hour, show.last_min] %>
             <% end %>
-          </ul>
-        </td>
+          </strong><br />
+
+          <!-- title -->
+          <%= show.title %>
+        </li>
         <% end %>
-      </tr>
+      </ul>
       <% end %>
-    </table>
+    </div>
+    <% end %>
   </body>
 </html>
