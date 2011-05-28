@@ -5,8 +5,10 @@
     <script type="text/javascript"
             src="file:///System/Library/WidgetResources/button/genericButton.js"></script>
     <script type="text/javascript" src="prototype.js"></script>
+
     <script type="text/javascript" src="file.js"></script>
     <script type="text/javascript" src="flip.js"></script>
+    <script type="text/javascript" src="tooltip.js"></script>
     <script type="text/javascript" src="Televi.js"></script>
 
     <link rel="stylesheet" href="flip.css" type="text/css" />
@@ -23,6 +25,7 @@
       <div id="right"></div>
 
       <div id="table"></div>
+      <div id="tooltip"></div>
 
       <div id="navigation">
         <script type="text/javascript">writeNavigationHours();</script>
@@ -99,20 +102,19 @@
         </form>
       </div>
 
-      <div class="right">
-        番組表は ONTV Japan から取得しています。<br />
+      <div id="ontv">
+        番組表は ONTV Japan から取得しています。
         <img onclick="widget.openURL('http://www.ontvjapan.com/')"
-             src="Images/ontv.png" alt="ONTV Japan" /><br /><br />
-        Televi 0.9<br />
-        <small>
-          Copyright &copy; 2005 KATO Kazuyoshi @
-          <a onclick="widget.openURL('http://8-p.info/')"><strong>8-p.info</strong></a>
-        </small><br />
+             src="Images/ontv.png" alt="ONTV Japan" />
+      </div>
 
+      <div id="banners">
+        <img src="Images/8-p.png" alt="8-p.info"
+             onclick="widget.openURL('http://8-p.info/')">&nbsp;&nbsp;
 	<img src="Images/solodesign.png" alt="designed by solo.design"
              onclick="widget.openURL('http://solodesign.jp/')" />
       </div>
-
+      
       <div id="done"></div>
     </div>
 

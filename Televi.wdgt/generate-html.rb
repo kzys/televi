@@ -1,9 +1,6 @@
 =begin
-Copyright (C) 2005 KATO Kazuyoshi <kzys@8-p.info>
-    All rights reserved.
-    This is free software with ABSOLUTELY NO WARRANTY.
-
-This file is released under the terms of the MIT X11 license.
+Copyright (c) 2005-2006 KATO Kazuyoshi <kzys@8-p.info>
+This source code is released under the MIT license.
 =end
 
 require 'kconv'
@@ -12,7 +9,7 @@ def escape_multibyte_char(s)
   s.gsub(/./u) do |c|
     if c.length == 1
       c
-    else 
+    else
       "&##{c.unpack('U')};"
     end
   end
@@ -89,13 +86,13 @@ def parse_summery(lines)
     when %r{<span class="style_corner">(.*?)</span>}
       corner = $1
       corner = nil if corner.empty?
-      
+
       return (if subtitle and corner
                 "#{subtitle}&#13;#{corner}"
               elsif subtitle or corner
                 "#{subtitle}#{corner}"
               else
-                '-'
+                nil
               end)
     when %r{<span class="style_subtitle">(.*?)</span>}
       subtitle = $1
@@ -110,8 +107,15 @@ def parse_programs(channels_map, html, today)
 
   while ln = lines.shift
     if md = ln.match(TITLE_PATTERN)
+      title = md[8].gsub(/<.+?>/, '')
+
       summery = parse_summery(lines)
-      title = "<a onclick=\"top.openONTV('#{md[1]}')\" title=\"#{summery}\">#{md[8].gsub(/<.+?>/, '')}</a>"
+      unless summery
+        summery = title
+      end
+
+      summery.gsub!(/&#.+?;/, ' ')
+      title = "<div onmouseover=\"showSummery(this, event, '#{summery}')\"><a onclick=\"top.openONTV('#{md[1]}')\">#{title}</a></div>"
 
       day, ch, start_hour, start_min, last_hour, last_min = *(md[2, 6].collect do |i| i.to_i end)
       if tommorow

@@ -1,18 +1,22 @@
 /*
-  Copyright (C) 2005 KATO Kazuyoshi <kzys@8-p.info>
-      All rights reserved.
-      This is free software with ABSOLUTELY NO WARRANTY.
-
-  This file is released under the terms of the MIT X11 license.
-*/
+ * Copyright (c) 2005-2006 KATO Kazuyoshi <kzys@8-p.info>
+ * This source code is released under the MIT license.
+ */
 
 var width_;
 var state_;
 var isUpdating_;
 var home_;
 
+var tooltip_;
+
 // debug = function(s) { alert(s) };
 debug = function(s) {};
+
+function showSummery(element, event, text)
+{
+    tooltip_.onmouseover(element, event, text);
+}
 
 function scrollToHour(hour) {
     var e = $('hour-' + hour);
@@ -39,15 +43,15 @@ function endCat()
     $('table').innerHTML = 'hello!';
 }
 
-function readFile(path) { 
+function readFile(path) {
     var req = new XMLHttpRequest();
-    
-    req.open("GET", path, false); 
+
+    req.open("GET", path, false);
     req.send(null);
-    
-    var resp = req.responseText; 
-    if (resp) { 
-        return resp; 
+
+    var resp = req.responseText;
+    if (resp) {
+        return resp;
     } else {
         return null;
     }
@@ -55,9 +59,9 @@ function readFile(path) {
 function loadHTMLs()
 {
     debug('>> loadHTMLs');
-     
+
     var path = home_ + '/Library/Application Support/Televi/';
-    
+
     $('table').innerHTML = readFile(path + 'table.html');
     $('channels').innerHTML = readFile(path + 'channels.html');
 }
@@ -65,7 +69,7 @@ function loadHTMLs()
 function endGenerate()
 {
     debug('>> endGenerate');
-    
+
     Element.hide('message');
     Element.show('navigation');
 
@@ -86,14 +90,14 @@ function updateHTML()
     } else {
         isUpdating_ = true;
     }
-    
+
     if (window.widget) {
         var cmd = widget.system("/usr/bin/ruby generate-html.rb " + state_,
                                 endGenerate);
         Element.hide('navigation');
         Element.show('message');
         cmd.onreaderror = function(s) {
-            $('message').innerHTML = s;             
+            $('message').innerHTML = s;
         };
     }
 }
@@ -135,8 +139,10 @@ function onshow()
 {
     debug('onshow{');
 
+    // Tooltip.hide();
+
     var now = new Date();
-    
+
     for (var i = 0; i < 24; i++) {
         if (i == now.getHours()) {
             $('navi-' + i).style.color = '#fff';
@@ -144,7 +150,7 @@ function onshow()
             $('navi-' + i).style.color = '#336';
         }
     }
-    
+
     if (checkUpdate()) {
         ;
     } else if ($('table').innerHTML == '') {
@@ -158,7 +164,7 @@ function onshow()
 
 function onhide()
 {
-    ;
+    // Tooltip.hide();
 }
 
 function setup()
@@ -169,6 +175,7 @@ function setup()
     Element.hide('message');
 
     isUpdating_ = false;
+    tooltip_ = new Tooltip('tooltip');
 
     if (widget) {
         widget.onshow = onshow;
@@ -190,7 +197,7 @@ function setup()
 
     createGenericButton($('done'), 'Done', doneClicked);
 
-    $('table').innerHTML = '';    
+    $('table').innerHTML = '';
     setInterval('checkUpdate();', 1000 * 60 * 60);
 
     resizeWidget();
@@ -200,7 +207,7 @@ function setup()
 function resizeWidget()
 {
     debug('resizeWidget');
-    
+
     if (window.widget) {
         window.resizeTo(88 * width_ + 28, 180);
         $('message').style.width = (88 * width_ + 28) + 'px';
@@ -247,7 +254,11 @@ function doneClicked()
     Flip.hideBack();
 
     width_ = parseInt($('width').value);
-    
+    if (88 * width_ + 28 > screen.width) {
+        width_ = Math.floor((screen.width - 28) / 88);
+        window.moveTo(0, window.screenY);
+    }
+
     if (window.widget) {
         widget.setPreferenceForKey(width_, "width");
     }

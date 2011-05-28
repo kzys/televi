@@ -50,6 +50,17 @@ body {
   text-align: center;
 }
 
+#tooltip {
+  position: absolute;
+  width: 150px;
+  font: normal 11px 'Lucida Grande', sans-serif;
+  padding: 2px;
+  border: 1px solid #fff;
+  background: #000;
+  opacity: 0.8;
+  color: #fff;
+}
+
 /* table */
 table {
   font: normal 10px 'Lucida Grande', sans-serif;
@@ -72,7 +83,7 @@ td {
   position: absolute;
   top: 0px;
   left: 4px;
-  
+
   height: 140px;
   overflow: hidden;
 
@@ -125,12 +136,17 @@ ul.hour {
     left: 20px;
     width: 320px;
 }
-#back .right {
+
+#ontv {
   font-size: 12px;
   position: absolute;
   top: 14px;
   left: 320px;
 }
+#ontv img {
+  margin: 15px 0 0 0;
+}
+
 #back #done {
     position: absolute;
     right: 14px;
@@ -139,4 +155,10 @@ ul.hour {
 #back #channels {
   margin-top: 5px;
   width: 200px;
+}
+
+#banners {
+  position: absolute;
+  left: 320px;
+  bottom: 35px;
 }

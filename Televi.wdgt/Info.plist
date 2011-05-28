@@ -11,7 +11,7 @@
     <key>CFBundleName</key>
     <string>Televi.wdgt</string>
     <key>CFBundleVersion</key>
-    <string>0.9</string>
+    <string>1.0</string>
     <key>DefaultImage</key>
     <string>Default.png</string>
     <key>MainHTML</key>
