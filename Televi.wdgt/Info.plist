@@ -8,17 +8,15 @@
 	<string>info.8-p.Dashboard.Televi</string>
 	<key>CFBundleName</key>
 	<string>Televi.wdgt</string>
+	<key>CFBundleVersion</key>
+	<string>0.3</string>
 	<key>DefaultImage</key>
 	<string>Default.png</string>
-	<key>Height</key>
-	<integer>220</integer>
 	<key>MainHTML</key>
 	<string>index.html</string>
-	<key>Width</key>
-	<integer>660</integer>
-    <key>CloseBoxInsetX</key>
-    <integer>5</integer>
-    <key>CloseBoxInsetY</key>
-    <integer>5</integer>
+        <key>CloseBoxInsetX</key>
+        <integer>5</integer>
+        <key>CloseBoxInsetY</key>
+        <integer>5</integer>
 </dict>
 </plist>

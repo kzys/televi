@@ -114,7 +114,7 @@ uri = if ARGV.empty?
 
 # uri = 'ontv.html'
 data = open(uri).read
-File.open('ontv.html', 'w').write(data)
+# File.open('ontv.html', 'w').write(data)
 
 html = Iconv.to_utf8(data)
 

@@ -1,3 +1,4 @@
+/* File */
 File = new Object();
 
 File.exist = function(path) {
@@ -6,15 +7,17 @@ File.exist = function(path) {
     } else {
         return false;
     }
-}
+};
     
 File.mtime = function(path) {
     var s = widget.system("/usr/bin/ruby -e 'puts File.mtime(ARGV.shift).tv_sec * 1000' " + path,
                           null).outputString;
     return new Date(s);
-}
+};
 
-
+/* Main */
+var stateChanged_ = false;
+    
 function scrollToHour(hour) {
     var w = document.getElementById('inner').contentWindow;
     var e = w.document.getElementById(''+hour);
@@ -36,14 +39,15 @@ function changeState(value)
     if (window.widget) {
         widget.setPreferenceForKey(value, "state");
     }
+    stateChanged_ = true;
 }
 
-function endHandler()
+function showTableAndScroll()
 { 
     var f = document.getElementById('inner');
-    f.src = 'table.html';
-
-    // setTimeout("scrollToNow()", 100);
+    if (f) {
+        f.src = 'table.html';
+    }
 }
 
 function updateTable()
@@ -60,23 +64,45 @@ function updateTable()
         }
 
         widget.system("/usr/bin/ruby generate-table.rb " + state + " > table.html",
-                      endHandler);
+                      showTableAndScroll);
     } else {
-        f.src = document.getElementById('inner').src = 'table.html';
+        f.src = 'table.html';
     }
+}
+
+function needsUpdate(mtime, now)
+{
+    if (now.getDay() != mtime.getDay()) {
+        if (now.getHours() >= 5) {
+            return true;
+        }
+    } else {
+        if (now.getHours() >= 5 && mtime.getHours() < 5) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function onshow()
 {
     alert('onshow');
 
-    var now = new Date();
-    
-    if ( (! File.exist('table.html')) ||
-         (File.mtime('table.html').getDay() != now.getDay() && now.getHours() >= 5)) {
+    if (! File.exist('table.html') ) {
+        updateTable();
+        return;
+    }
+
+    if ( needsUpdate(File.mtime('table.html'), new Date()) ) {
         updateTable();
     } else {
-        scrollToNow();
+        var f = document.getElementById('inner');
+        if (f.src.match(/\/table\.html$/)) { // already open?
+            scrollToNow();
+        } else {
+            f.src = 'table.html';
+        }
     }
 }
 
@@ -90,23 +116,22 @@ function setup()
     var back = document.getElementById("back");
     back.style.display = 'none';
 
-    /*
-    var iframe = document.getElementById('inner');
-    if (File.exist('table.html')) {
-        iframe.src = 'table.html';
-    }
-    */
-
     if (window.widget) {
         widget.onshow = onshow;
         widget.onhide = onhide;
-    }
 
-    scrollToNow();
+        onshow();
+    }
 }
 
 function doneClicked()
 {
     Flip.hideBack();
-    setTimeout('scrollToNow();', 1000); // Wait until done of flip
+
+    if (stateChanged_) {
+        stateChanged_ = false;
+        updateTable();
+    } else {
+        // setTimeout('scrollToNow();', 100); // Wait until done of flip
+    }
 }
