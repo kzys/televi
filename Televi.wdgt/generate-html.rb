@@ -6,22 +6,15 @@ Copyright (C) 2005 KATO Kazuyoshi <kzys@8-p.info>
 This file is released under the terms of the MIT X11 license.
 =end
 
-require 'iconv'
+require 'kconv'
 
-class Iconv
-  def self.to_utf8(src)
-    ic = Iconv.new('UTF-8', 'EUC-JP')
-    result = ''
-
-    begin
-      result << ic.iconv(src)
-    rescue Iconv::IllegalSequence => e
-      result << e.success
-      ch, src = e.failed.split(//, 2)
-      retry
+def escape_multibyte_char(s)
+  s.gsub(/./u) do |c|
+    if c.length == 1
+      c
+    else 
+      "&##{c.unpack('U')};"
     end
-
-    result
   end
 end
 
@@ -95,10 +88,11 @@ def parse_summery(lines)
     case ln
     when %r{<span class="style_corner">(.*?)</span>}
       corner = $1
+      corner = nil if corner.empty?
       
-      return (if subtitle and !corner.empty?
-                "#{subtitle} &raquo;&raquo; #{corner}"
-              elsif subtitle or !corner.empty?
+      return (if subtitle and corner
+                "#{subtitle}&#13;#{corner}"
+              elsif subtitle or corner
                 "#{subtitle}#{corner}"
               else
                 '-'
@@ -157,21 +151,21 @@ channels = []
 channels_map = {}
 
 loop do
-  $stderr.printf("Getting page %d...\n", page)
+  $stderr.print("Getting page #{page}...")
 
   data = `./nsurlget '#{uri}&page=#{page}'`
-  # File.open("debug-#{page}.html", 'w').write(data)
-  html = Iconv.to_utf8(data)
+
+  html = data.toutf8
 
   if channels.empty?
-    $stderr.printf("Parsing channels...\n", page)
+    $stderr.print("Parsing channels...")
     channels = create_channels(html)
     channels.each do |ch|
       channels_map[ch.number] = ch
     end
   end
 
-  $stderr.printf("Parsing page %d...\n", page)
+  $stderr.print("Parsing page #{page}...")
   parse_programs(channels_map, html, Time.now.day)
 
   if html =~ NEXT_PAGE_PATTERN
@@ -184,7 +178,7 @@ end
 require 'erb'
 
 tmpl = ERB.new(File.open('tmpl/table.rhtml').read)
-File.open("#{path}/table.html", 'w').print(tmpl.result(binding))
+File.open("#{path}/table.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))
 
 tmpl = ERB.new(File.open('tmpl/channels.rhtml').read)
-File.open("#{path}/channels.html", 'w').print(tmpl.result(binding))
+File.open("#{path}/channels.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))

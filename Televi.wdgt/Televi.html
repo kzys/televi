@@ -2,29 +2,33 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
+    <script type="text/javascript"
+            src="file:///System/Library/WidgetResources/button/genericButton.js"></script>
     <script type="text/javascript" src="prototype.js"></script>
-
     <script type="text/javascript" src="file.js"></script>
     <script type="text/javascript" src="flip.js"></script>
-
     <script type="text/javascript" src="Televi.js"></script>
 
     <link rel="stylesheet" href="flip.css" type="text/css" />
     <link rel="stylesheet" href="Televi.css" type="text/css" />
-    
+
     <title>Televi Widget</title>
   </head>
 
-  <body onload=";">    
+  <body onload="setup();">
     <div id="front" onmousemove="Flip.mousemove(event);" onmouseout="Flip.mouseout(event);">
-      <div id="left"></div>
-      <iframe name="table" src="table.html" id="table" scrolling="no"></iframe>
+      <div id="bigNumber">0</div>
 
-      <div class="navigation">
-        <script type="text/javascript">writeNavigationHours();</script>                            
-        <a onclick="updateHTML()" title="番組表を更新">U</a>
-        <div id="right"></div>
+      <div id="left"></div>
+      <div id="right"></div>
+
+      <div id="table"></div>
+
+      <div id="navigation">
+        <script type="text/javascript">writeNavigationHours();</script>
+        <a id="update" onclick="updateHTML();">Update</a>
       </div>
+
 
       <div class="Flip" id="Flip"
            onclick="Flip.showBack(event);"
@@ -34,10 +38,10 @@
 
     <div id="back">
       <div class="left">
-        <form action=".">
-          <select name="state"
-                        onchange="changeState(this.options[this.selectedIndex].value)"
-                        style="width:200px">
+        <form id="prefs" action=".">
+          <select id="state"
+                  onchange="changeState(this.options[this.selectedIndex].value)"
+                  style="width:200px">
             <option>地域</option>
 	    <option value="0001">北海道</option>
 	    <option value="0101">青森</option>　
@@ -88,29 +92,31 @@
 	    <option value="0A01">沖縄</option>
           </select>
 
-          <br />表示するチャンネル数: <input type="text" id="width" value="7" size="2" /> ch.
+          <br />
+          表示するチャンネル数: <input type="text" id="width" value="7" size="2" /> ch.
+
+          <div id="channels"></div>
         </form>
-        <iframe name="channels" src="channels.html" scrolling="no"></iframe>
       </div>
-      
+
       <div class="right">
         番組表は ONTV Japan から取得しています。<br />
         <img onclick="widget.openURL('http://www.ontvjapan.com/')"
-             src="Images/ontv.png" alt="ONTV Japan" />
-        <br /><br />
-        Copyright &copy; 2005
-        <a onclick="widget.openURL('http://8-p.info/')">KATO Kazuyoshi</a><br />
+             src="Images/ontv.png" alt="ONTV Japan" /><br /><br />
+        Televi 0.9<br />
+        <small>
+          Copyright &copy; 2005 KATO Kazuyoshi @
+          <a onclick="widget.openURL('http://8-p.info/')"><strong>8-p.info</strong></a>
+        </small><br />
 
 	<img src="Images/solodesign.png" alt="designed by solo.design"
              onclick="widget.openURL('http://solodesign.jp/')" />
       </div>
-      <img src="Images/button.png" alt="Done" id="done" onclick="doneClicked();" />
-      
+
+      <div id="done"></div>
     </div>
 
-    <script type="text/javascript">
-      setup();
-    </script>
+    <div id="message">-</div>
   </body>
 
 </html>

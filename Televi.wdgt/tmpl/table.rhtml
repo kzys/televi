@@ -1,25 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.0//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-    <link rel="stylesheet" href="file://<%= Dir.pwd %>/Televi.css" type="text/css" />
-    <title>Televi Time Table</title>
-  </head>
-
-  <body onload="top.scrollToNow()">
-    <div class="channel" style="top:0px; left:0px; width:88px;">
-      <% 24.times do |hour| %>
-      <div class="hour" id="hour-<%= hour+5 %>"><%= (hour+5) % 24 %></div>
-     <% end %>
-   </div>
-
+<table id="tableHeader">
+  <tr>    
+    <th></th>
     <% channels.each_with_index do |ch, i| %>
-    <div class="channel" style="top:0px; left:<%= i * 88 %>px; width:88px;"
-         id="channel-<%= ch.number %>">
-      <h1 style="width:88px"><%= ch.title %></h1>
-      <% 24.times do |hour| %>
-      <ul class="hour">
+    <th><div class="column"><%= ch.title %></div></th>
+    <% end %>
+  </tr>
+</table>
+
+<table id="tableContent">
+  <% 24.times do |hour| %>
+  <tr>
+    <th class="hour" id="hour-<%= hour+5 %>"></th>
+    <% channels.each_with_index do |ch, i| %>
+    <td>
+      <ul class="hour column">
         <% (ch.fetch(hour+5) || []).each do |show| %>
         <li>
           <!-- time -->
@@ -29,14 +23,14 @@
             <%= "%02d:%02d" % [show.last_hour, show.last_min] %>
             <% end %>
           </strong><br />
-
+          
           <!-- title -->
           <%= show.title %>
         </li>
         <% end %>
       </ul>
-      <% end %>
-    </div>
+    </td>
     <% end %>
-  </body>
-</html>
+  </tr>
+  <% end %>
+</table>

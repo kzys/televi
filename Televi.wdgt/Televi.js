@@ -8,24 +8,18 @@
 
 var width_;
 var state_;
-var system_ = false;
-var isBack_ = false;
+var isUpdating_;
 var home_;
 
 // debug = function(s) { alert(s) };
 debug = function(s) {};
 
 function scrollToHour(hour) {
-    debug('scrollToHour');
-
-    var w = frames['table'];
-    debug('w = ' + w);
-
-    var e = w.document.getElementById('hour-'+hour);
-    debug('e = ' + e);
+    var e = $('hour-' + hour);
 
     if (e) {
-        frames['table'].scrollTo(0, e.offsetTop);
+        $('tableContent').style.top = (-e.offsetTop + 20) + 'px';
+        $('bigNumber').innerText = hour;
     }
 }
 
@@ -40,48 +34,67 @@ function scrollToNow()
     scrollToHour(hours);
 }
 
-function afterUpdateHTML()
+function endCat()
 {
-    debug('>> afterUpdateHTML');
+    $('table').innerHTML = 'hello!';
+}
 
-    var path = 'file://' + home_ + '/Library/Application Support/Televi/';
-    debug(path)
+function readFile(path) { 
+    var req = new XMLHttpRequest();
     
-    if (! isBack_) {
-        frames['table'].location.href = path + 'table.html';
+    req.open("GET", path, false); 
+    req.send(null);
+    
+    var resp = req.responseText; 
+    if (resp) { 
+        return resp; 
     } else {
-        frames['channels'].location.href = path + 'channels.html';
+        return null;
     }
+}
+function loadHTMLs()
+{
+    debug('>> loadHTMLs');
+     
+    var path = home_ + '/Library/Application Support/Televi/';
+    
+    $('table').innerHTML = readFile(path + 'table.html');
+    $('channels').innerHTML = readFile(path + 'channels.html');
+}
 
-    system_ = false;
+function endGenerate()
+{
+    debug('>> endGenerate');
+    
+    Element.hide('message');
+    Element.show('navigation');
+
+    Form.enable('prefs');
+
+    loadHTMLs();
+    setTimeout('scrollToNow();', 1000);
+
+    isUpdating_ = false;
 }
 
 function updateHTML()
 {
     debug('>> updateHTML');
 
-    if (! isBack_) {
-        frames['table'].location.href = 'loading.html';
-    }
-
-    if (window.widget && system_ == false) {
-        debug('Call ruby!');
-        system_ = widget.system("/usr/bin/ruby generate-html.rb " + state_,
-                                afterUpdateHTML);
-        system_.onreaderror = function(s) {
-            var e;
-            if (! isBack_) {
-                e = frames['table'].document.getElementById('message');                
-            } else {
-                e = frames['channels'].document.getElementById('message');                
-            }
-            
-            if (e) {
-                e.innerHTML = s;
-            }
-        };
+    if (isUpdating_) {
+        return;
     } else {
-        ;
+        isUpdating_ = true;
+    }
+    
+    if (window.widget) {
+        var cmd = widget.system("/usr/bin/ruby generate-html.rb " + state_,
+                                endGenerate);
+        Element.hide('navigation');
+        Element.show('message');
+        cmd.onreaderror = function(s) {
+            $('message').innerHTML = s;             
+        };
     }
 }
 
@@ -100,36 +113,45 @@ function needsUpdate(mtime, now)
     return false;
 }
 
+function checkUpdate()
+{
+    var path = home_ + '/Library/Application Support/Televi/';
+    var now = new Date();
+
+    if (! File.exist(path + 'table.html')) {
+        debug('Not found');
+        updateHTML();
+        return true;
+    } else if (needsUpdate(File.mtime(path + 'table.html'), now)) {
+        debug('Need to update');
+        updateHTML();
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function onshow()
 {
     debug('onshow{');
 
-    if (! isBack_) {
-        var now = new Date();
-
-        for (var i = 0; i < 24; i++) {
-            if (i == now.getHours()) {
-                $('navi-' + i).style.color = '#fff';
-            } else {
-                $('navi-' + i).style.color = '#336';
-            }
-        }
-        
-        var path = home_ + '/Library/Application Support/Televi/';
-        debug(path);
-        if (! File.exist(path + 'table.html')) {
-            debug('Not found');
-            updateHTML();
-        } else if (needsUpdate(File.mtime(path + 'table.html'), now)) {
-            debug('Need to update');
-            updateHTML();
+    var now = new Date();
+    
+    for (var i = 0; i < 24; i++) {
+        if (i == now.getHours()) {
+            $('navi-' + i).style.color = '#fff';
         } else {
-            if (frames['table'].location.href.match(/\/table\.html$/)) {
-                scrollToNow();
-            } else {
-                frames['table'].location.href = 'file:' + path + 'table.html';
-            }
+            $('navi-' + i).style.color = '#336';
         }
+    }
+    
+    if (checkUpdate()) {
+        ;
+    } else if ($('table').innerHTML == '') {
+        loadHTMLs();
+        setTimeout('scrollToNow();', 1000);
+    } else {
+        scrollToNow();
     }
     debug('}onshow');
 }
@@ -143,8 +165,10 @@ function setup()
 {
     debug('>> setup');
 
-    var back = $("back");
-    back.style.display = 'none';
+    Element.hide('back');
+    Element.hide('message');
+
+    isUpdating_ = false;
 
     if (widget) {
         widget.onshow = onshow;
@@ -162,21 +186,27 @@ function setup()
         }
 
         home_ = widget.system('/bin/echo -n $HOME', null).outputString;
+    }
 
-        setTimeout("onshow();", 1500);
-   }
+    createGenericButton($('done'), 'Done', doneClicked);
+
+    $('table').innerHTML = '';    
+    setInterval('checkUpdate();', 1000 * 60 * 60);
 
     resizeWidget();
+    onshow();
 }
 
 function resizeWidget()
 {
     debug('resizeWidget');
+    
     if (window.widget) {
         window.resizeTo(88 * width_ + 28, 180);
+        $('message').style.width = (88 * width_ + 28) + 'px';
     }
-    $('table').style.width = (width_ * 88) + 'px';
-    $('front').style.width = (width_ * 88) + 'px';
+    $('front').style.width = (88 * width_) + 'px';
+    $('table').style.width = (88 * width_ + 20) + 'px';
 }
 
 function changeState(s)
@@ -186,7 +216,7 @@ function changeState(s)
         widget.setPreferenceForKey(state_, "state");
     }
 
-    frames['channels'].location.href = 'loading.html';
+    Form.disable('prefs');
     updateHTML();
 }
 
@@ -194,11 +224,19 @@ Flip.beforeFlip = function()
 {
     debug('Flip.beforeFlip');
 
-    isBack_ = true;
-
-    $('width').value = width_ + '';
     if (window.widget) {
         window.resizeTo(640, 180);
+        $('message').style.width = '640px';
+    }
+
+    $('width').value = width_ + '';
+
+    var ary = $('state').options;
+    for (var i = 0; i < ary.length; i++) {
+        if (ary[i].value == state_) {
+            $('state').selectedIndex = i;
+            break;
+        }
     }
 }
 
@@ -209,17 +247,13 @@ function doneClicked()
     Flip.hideBack();
 
     width_ = parseInt($('width').value);
-    if (width_ > 10) {
-        width_ = 10;
-    }
     
     if (window.widget) {
         widget.setPreferenceForKey(width_, "width");
     }
 
     resizeWidget();
-
-    isBack_ = false;
+    scrollToNow();
 }
 
 function openONTV(path)
@@ -234,6 +268,8 @@ function writeNavigationHours()
 {
     for (var i = 0; i < 24; i++) {
         var hour = ((i + 5) % 24);
-        document.write('<a onclick="scrollToHour(' + (i + 5) + ')" id="navi-' + hour + '">' + hour + '</a>');
+        document.write('<a onclick="scrollToHour(' +
+                       (i + 5) + ')" id="navi-' + hour + '">' +
+                       hour + '</a>');
     }
 }

@@ -1,24 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.0//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-    <link rel="stylesheet" href="file://<%= Dir.pwd %>/Televi.css" type="text/css" />
-    <title>Televi Channels</title>
-
-    <script type="text/javascript" src="channels.js"></script>
-  </head>
-
-  <body>
-    <form>
-      <select size="5" style="width:200px"
-              id="channels">
-        <% channels.each_with_index do |ch, i| %>
-        <option value="<%= ch.number %>">
-          <%= ch.title %>
-        </option>
-        <% end %>
-      </select>
-    </form>
-  </body>
-</html>
+<form>
+  <select size="5" style="width:200px"
+          id="channels">
+    <% channels.each_with_index do |ch, i| %>
+    <option value="<%= ch.number %>">
+      <%= i+1 %>. <%= ch.title %>
+    </option>
+    <% end %>
+  </select>
+</form>
