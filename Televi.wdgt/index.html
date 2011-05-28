@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"
+	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+
+    <script type="text/javascript" src="Flip.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+
+    <link rel="stylesheet" href="basic.css" type="text/css" />
+    <title>Televi</title>
+  </head>
+
+  <body onload="setup();">
+    <div id="front"
+         onmousemove="Flip.mousemove(event);" onmouseout="Flip.mouseexit(event);">
+
+      <iframe id="inner" src="loading.html" scrolling="no"></iframe>
+
+      <div class="navigation">
+      <script type="text/javascript">
+        for (var i = 0; i < 24; i++) {
+          var hour = (i + 4) % 24;
+          document.write('<a onclick="scrollToHour(' + hour + ')" >' + hour + '</a>');
+        }
+      </script>
+      <a onclick="scrollToNow()">N</a>
+      <a onclick="forceUpdateTable()">U</a>
+      </div>
+
+      <div class="flip" id="flip"
+           onclick="Flip.showBack(event);"
+           onmouseover="Flip.enterflip(event);" onmouseout="Flip.exitflip(event);"></div>
+      <div class="flip" id="flipRollie"></div>
+    </div>
+
+    <div id="back">
+      <div class="left">
+        <h1>Televi 0.1</h1>
+
+        <form>
+          地域:
+          <select name="state"
+                onchange="changeState(this.options[this.selectedIndex].value)">
+            <option>都道府県を選択してください</option>
+	    <option value="001">北海道</option>
+	    <option value="101">青森</option>　
+	    <option value="102">秋田</option>　
+	    <option value="103">岩手</option>　
+	    <option value="104">山形</option>　
+	    <option value="105">宮城</option>　
+	    <option value="106">福島</option>　
+	    <option value="002">東京</option>　
+	    <option value="201">埼玉</option>　
+	    <option value="202">千葉</option>　
+	    <option value="203">神奈川</option>　
+	    <option value="204">群馬</option>　
+	    <option value="205">栃木</option>　
+	    <option value="206">茨城</option>　
+	    <option value="301">山梨</option>　
+	    <option value="302">新潟</option>　
+	    <option value="303">長野</option>　
+	    <option value="401">静岡</option>　
+	    <option value="003">愛知</option>　
+	    <option value="402">岐阜</option>　
+	    <option value="403">三重</option>　
+	    <option value="501">富山</option>　
+	    <option value="502">石川</option>　
+	    <option value="503">福井</option>　
+	    <option value="004">大阪</option>　
+	    <option value="601">京都</option>　
+	    <option value="602">兵庫</option>　
+	    <option value="603">奈良</option>　
+	    <option value="604">和歌山</option>　
+	    <option value="605">滋賀</option>　
+	    <option value="701">岡山</option>　
+	    <option value="702">広島</option>　
+	    <option value="703">鳥取</option>　
+	    <option value="704">島根</option>　
+	    <option value="705">山口</option>　
+	    <option value="801">香川</option>　
+	    <option value="802">徳島</option>　
+	    <option value="803">愛媛</option>　
+	    <option value="804">高知</option>　
+	    <option value="005">福岡</option>　
+	    <option value="901">佐賀</option>　
+	    <option value="902">鹿児島</option>　
+	    <option value="903">宮崎</option>　
+	    <option value="904">大分</option>　
+	    <option value="905">熊本</option>　
+	    <option value="906">長崎</option>　
+	    <option value="A01">沖縄</option>
+          </select>
+        </form>
+      </div>
+
+      <div class="credit">
+        番組表は ONTV Japan から取得しています。<br />
+        <a onclick="widget.openURL('http://www.ontvjapan.com/')">
+          <img src="ontv.png" alt="ONTV Japan" />
+        </a><br />
+        Copyright &copy; 2005 KATO Kazuyoshi
+      </div>
+
+      <a class="button" onclick="doneClicked();">Done</a>
+    </div>
+  </body>
+
+</html>

@@ -1,0 +1,89 @@
+body {
+  color: #333;
+  margin: 0;
+  padding: 5px;
+
+  font: bold 12px 'Lucida Grande'; 
+  background: url(Default.png);
+}
+
+iframe {
+  width: 640px;
+  display: block;
+  height: 140px;
+  overflow: hidden;
+}
+
+.navigation {
+  font: bold 15px 'Helvetica Neue';
+  text-align: center;
+  padding: 2px;
+  border-top: 1px solid #999;
+}
+.navigation a {
+  margin: 0 5px;
+  color: #999;
+  text-decoration: none;
+}
+.navigation a:hover {
+  color: #000;
+}
+
+#front {
+}
+
+.flip {
+  position:absolute;
+  bottom: 15px;
+  right:  15px;
+  width:  13px;
+  height: 13px;
+}
+#flip {
+  opacity:0;
+  background:url(file:///System/Library/WidgetResources/ibutton/black_i.png) no-repeat top left;
+  z-index: 20;
+}
+#flipRollie {
+  display:none;
+  opacity:0.25;
+  background:url(file:///System/Library/WidgetResources/ibutton/black_rollie.png) no-repeat top left;
+  z-index: 10;
+}
+
+#back {
+  padding: 10px 20px;
+}
+#back h1 {
+  color: #000;
+  margin: 5px;
+  padding: 0;
+  font-size: 20px;
+}
+#back .left {
+  width: 40%;
+  float: left;
+}
+#back .credit {
+  width: 50%;
+  float: right;
+  line-height: 30px;
+}
+a.button {
+  font-size: 10px;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  text-align: left;
+  border: 1px solid #ccc;
+  border-color: #ccc #666 #666 #ccc;
+  color: #333;
+  background: url(button.png);
+  padding: 1px 8px;
+}
+a.button:hover {
+  border-color: #ccc #333 #333 #ccc;
+}
+a.button:active {
+  border-color: #666 #ccc #ccc #666;
+}

@@ -1,0 +1,37 @@
+body {
+  margin: 0;
+  padding: 0;
+  font: normal 10px 'Lucida Grande';
+}
+table {
+  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+  width: 640px;
+}
+th { 
+}
+th.column {
+  vertical-align: top;
+  font-size: 15px;
+  width: 20px;
+}
+#channels {
+  position: fixed;
+  top: 0px;
+  height: 20px;
+}
+th.channel {
+  text-align: center;
+  width: 50px;
+  border-left: 1px solid #ccc;
+}
+#programs {
+  margin-top: 20px;
+}
+#programs td {
+  width: 50px;
+  height: 200px;
+  vertical-align: top;
+  border-left: 1px solid #ccc;
+}
