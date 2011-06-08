@@ -5,8 +5,6 @@
 
 var width_;
 var state_;
-var isUpdating_;
-var home_;
 
 var tooltip_;
 
@@ -90,7 +88,7 @@ function checkUpdate()
     app.update();
     return true;
 
-    var path = home_ + '/Library/Application Support/Televi/';
+    var path = '';
     var now = new Date();
 
     if (! File.exist(path + 'table.html')) {
