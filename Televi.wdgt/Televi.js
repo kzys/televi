@@ -154,6 +154,18 @@ function MainWidget() {
 }
 
 MainWidget.prototype = {
+    navigationHours: function () {
+        var html = '';
+
+        for (var i = 0; i < 24; i++) {
+            var hour = ((i + 5) % 24);
+            html += ('<a onclick="scrollToHour(' +
+                     (i + 5) + ')" id="navi-' + hour + '">' +
+                     hour + '</a>');
+        }
+
+        return html;
+    },
     update: function () {
         debug('>> updateHTML');
 
@@ -223,6 +235,7 @@ function setup()
     });
 
     app = new MainWidget;
+    $('#navigation .inner').html(app.navigationHours());
     tooltip_ = new Tooltip($('#tooltip').get(0));
 
     if (widget) {
@@ -319,14 +332,4 @@ function openONTV(path)
         widget.openURL('http://www.ontvjapan.com' + path);
     else
         alert(path);
-}
-
-function writeNavigationHours()
-{
-    for (var i = 0; i < 24; i++) {
-        var hour = ((i + 5) % 24);
-        document.write('<a onclick="scrollToHour(' +
-                       (i + 5) + ')" id="navi-' + hour + '">' +
-                       hour + '</a>');
-    }
 }
