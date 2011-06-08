@@ -236,6 +236,9 @@ function setup()
 
     app = new MainWidget;
     $('#navigation .inner').html(app.navigationHours());
+    $('#update').click(function () {
+        app.update()
+    });
     tooltip_ = new Tooltip($('#tooltip').get(0));
 
     if (widget) {
