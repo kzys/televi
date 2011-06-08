@@ -19,10 +19,11 @@ function showSummery(element, event, text)
 }
 
 function scrollToHour(hour) {
-    if (! $('#hour-' + hour).empty()) {
-        $('#tableContent').css({ top: (-e.offsetTop + 20) + 'px' });
+    $('#hour-' + hour).each(function (index, element) {
+        console.log(index);
+        $('#tableContent').css({ top: -element.offsetTop + 20 });
         $('#bigNumber').html(hour);
-    }
+    });
 }
 
 function scrollToNow()
@@ -41,40 +42,15 @@ function endCat()
     $('table').innerHTML = 'hello!';
 }
 
-function readFile(path) {
-    var req = new XMLHttpRequest();
-
-    req.open("GET", path, false);
-    req.send(null);
-
-    var resp = req.responseText;
-    if (resp) {
-        return resp;
-    } else {
-        return null;
-    }
-}
-function loadHTMLs()
-{
-    debug('>> loadHTMLs');
-    return;
-
-    var path = home_ + '/Library/Application Support/Televi/';
-
-    $('table').innerHTML = readFile(path + 'table.html');
-    $('channels').innerHTML = readFile(path + 'channels.html');
-}
-
 function endGenerate()
 {
     debug('>> endGenerate');
 
-    $('message').hide();
-    $('navigation').show();
+    $('#message').hide();
+    $('#navigation').show();
 
     $('#prefs').removeAttr('disabled');
 
-    loadHTMLs();
     setTimeout('scrollToNow();', 1000);
 
     isUpdating_ = false;
@@ -91,12 +67,18 @@ function updateHTML()
     }
 
     if (window.widget) {
-        var cmd = widget.system("/usr/bin/ruby generate-html.rb " + state_,
-                                endGenerate);
+        var cmd;
+        cmd = widget.system("/usr/bin/ruby generate-html.rb",
+                            function () {
+                                var ary = cmd.outputString.split(/\n/);
+                                $('#table').html(ary[0]);
+                                $('#channels').html(ary[1]);
+                                endGenerate();
+                            });
         $('#navigation').hide();
         $('#message').show();
         cmd.onreaderror = function(s) {
-            $('message').innerHTML = s;
+            $('#message').innerHTML = s;
         };
     }
 }
@@ -118,12 +100,14 @@ function needsUpdate(mtime, now)
 
 function checkUpdate()
 {
+    updateHTML();
+    return true;
+
     var path = home_ + '/Library/Application Support/Televi/';
     var now = new Date();
 
     if (! File.exist(path + 'table.html')) {
         debug('Not found');
-        updateHTML();
         return true;
     } else if (needsUpdate(File.mtime(path + 'table.html'), now)) {
         debug('Need to update');
@@ -152,8 +136,7 @@ function onshow()
 
     if (checkUpdate()) {
         ;
-    } else if ($('table').innerHTML == '') {
-        loadHTMLs();
+    } else if ($('#table').innerHTML == '') {
         setTimeout('scrollToNow();', 1000);
     } else {
         scrollToNow();
@@ -182,7 +165,7 @@ function setup()
     $('#back, #message').hide();
 
     isUpdating_ = false;
-    tooltip_ = new Tooltip('tooltip');
+    tooltip_ = new Tooltip($('#tooltip').get(0));
 
     if (widget) {
         widget.onshow = onshow;
@@ -198,8 +181,6 @@ function setup()
         if (! state_) {
             state_ = '';
         }
-
-        home_ = widget.system('/bin/echo -n $HOME', null).outputString;
     }
 
     createGenericButton(document.getElementById('done'), 'Done', doneClicked);

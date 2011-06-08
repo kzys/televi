@@ -185,15 +185,9 @@ if __FILE__ == $0
 
   parse_programs(channels_map, pages.join(''), Time.now.day)
 
-
-  path = Pathname.new("~/Library/Application Support/Televi").expand_path
-  unless path.exist?
-    path.mkdir
-  end
-
   tmpl = ERB.new(File.open('tmpl/table.rhtml').read)
-  File.open("#{path}/table.html", 'w').print(tmpl.result(binding))
+  puts tmpl.result(binding).gsub(/\n/, ' ')
 
   tmpl = ERB.new(File.open('tmpl/channels.rhtml').read)
-  File.open("#{path}/channels.html", 'w').print(tmpl.result(binding))
+  puts tmpl.result(binding).gsub(/\n/, ' ')
 end
