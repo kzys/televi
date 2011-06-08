@@ -29,3 +29,16 @@ test('fetchPages', function () {
     server.respond();
     ok(callback.calledWith(pages));
 });
+
+test('createOptions', function () {
+    var server = this.sandbox.useFakeServer();
+    server.respondWith('GET',
+                       'http://www.ontvjapan.com/pg_change_area/?bc_code=00',
+                       [ 200, {}, '' ]);
+
+    var callback = this.spy();
+    createOptions(callback);
+
+    server.respond();
+    ok(callback.calledWith([]));
+});

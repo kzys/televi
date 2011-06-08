@@ -189,20 +189,32 @@ function onhide()
     // Tooltip.hide();
 }
 
+function createOptions(callback) {
+    var PATTERN =
+        /<A href="\/pg_grid_normal\/\?.*?&service_code=(\d+)&.*?">(.*?)<\/A>/g;
+
+    $.get('http://www.ontvjapan.com/pg_change_area/?bc_code=00',
+          function (data) {
+              var options = [];
+              data.replace(PATTERN, function (s, serviceCode, name) {
+                  options.push($('<option/>').attr('value',
+                                                   serviceCode).html(name));
+              });
+              callback(options)
+          });
+}
+
 function setup()
 {
     XMLHttpRequest.prototype.setRequestHeader = function () {};
-    var pattern = /<A href="\/pg_grid_normal\/\?.*?&service_code=(\d+)&.*?">(.*?)<\/A>/g;
-    $.get('http://www.ontvjapan.com/pg_change_area/?bc_code=00', function (data) {
-        data.replace(pattern, function (s, serviceCode, name) {
-            var option = $('<option/>').attr('value', serviceCode).html(name);
-            $('#state').append(option);
-        })
-    });
 
     debug('>> setup');
 
     $('#back, #message').hide();
+
+    createOptions(function (options) {
+        $('#state').append(options);
+    });
 
     isUpdating_ = false;
     tooltip_ = new Tooltip($('#tooltip').get(0));
