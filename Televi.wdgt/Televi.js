@@ -18,7 +18,6 @@ function showSummery(element, event, text)
 
 function scrollToHour(hour) {
     $('#hour-' + hour).each(function (index, element) {
-        console.log(index);
         $('#tableContent').css({ top: -element.offsetTop + 20 });
         $('#bigNumber').html(hour);
     });
@@ -231,12 +230,14 @@ function setup()
     $('#back, #message').hide();
 
     createOptions(function (options) {
-        $('#state').append(options);
+        options.forEach(function (i) {
+            $('#state').append(i);
+        });
     });
 
     app = new MainWidget;
     $('#navigation .inner').html(app.navigationHours());
-    $('#update').click(function () {
+    $('#update').bind('click', function () {
         app.update()
     });
     tooltip_ = new Tooltip($('#tooltip').get(0));
