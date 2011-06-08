@@ -134,55 +134,56 @@ def parse_programs(channels_map, html, today)
 end
 
 # Main
+if __FILE__ == $0
+  require 'pathname'
 
-require 'pathname'
+  path = Pathname.new("~/Library/Application Support/Televi").expand_path
+  unless path.exist?
+    path.mkdir
+  end
 
-path = Pathname.new("~/Library/Application Support/Televi").expand_path
-unless path.exist?
-  path.mkdir
-end
+  uri = (if ARGV.empty?
+           "http://www.ontvjapan.com/program/gridOneday.php?"
+         else
+           "http://www.ontvjapan.com/program/gridOneday.php?tikicd=#{ARGV.shift}"
+         end)
 
-uri = (if ARGV.empty?
-        "http://www.ontvjapan.com/program/gridOneday.php?"
-      else
-        "http://www.ontvjapan.com/program/gridOneday.php?tikicd=#{ARGV.shift}"
-      end)
+  html = nil
+  page = 1
 
-html = nil
-page = 1
+  channels = []
+  channels_map = {}
 
-channels = []
-channels_map = {}
+  loop do
+    $stderr.print("Getting page #{page}...")
 
-loop do
-  $stderr.print("Getting page #{page}...")
+    data = `./nsurlget '#{uri}&page=#{page}'`
 
-  data = `./nsurlget '#{uri}&page=#{page}'`
+    html = data.toutf8
 
-  html = data.toutf8
+    if channels.empty?
+      $stderr.print("Parsing channels...")
+      channels = create_channels(html)
+      channels.each do |ch|
+        channels_map[ch.number] = ch
+      end
+    end
 
-  if channels.empty?
-    $stderr.print("Parsing channels...")
-    channels = create_channels(html)
-    channels.each do |ch|
-      channels_map[ch.number] = ch
+    $stderr.print("Parsing page #{page}...")
+    parse_programs(channels_map, html, Time.now.day)
+
+    if html =~ NEXT_PAGE_PATTERN
+      page += 1
+    else
+      break
     end
   end
 
-  $stderr.print("Parsing page #{page}...")
-  parse_programs(channels_map, html, Time.now.day)
+  require 'erb'
 
-  if html =~ NEXT_PAGE_PATTERN
-    page += 1
-  else
-    break
-  end
+  tmpl = ERB.new(File.open('tmpl/table.rhtml').read)
+  File.open("#{path}/table.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))
+
+  tmpl = ERB.new(File.open('tmpl/channels.rhtml').read)
+  File.open("#{path}/channels.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))
 end
-
-require 'erb'
-
-tmpl = ERB.new(File.open('tmpl/table.rhtml').read)
-File.open("#{path}/table.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))
-
-tmpl = ERB.new(File.open('tmpl/channels.rhtml').read)
-File.open("#{path}/channels.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))
