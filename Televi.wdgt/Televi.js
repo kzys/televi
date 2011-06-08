@@ -11,7 +11,7 @@ var home_;
 var tooltip_;
 
 // debug = function(s) { alert(s) };
-debug = function(s) {};
+debug = function(s) { console.log(s) };
 
 function showSummery(element, event, text)
 {
@@ -19,11 +19,9 @@ function showSummery(element, event, text)
 }
 
 function scrollToHour(hour) {
-    var e = $('hour-' + hour);
-
-    if (e) {
-        $('tableContent').style.top = (-e.offsetTop + 20) + 'px';
-        $('bigNumber').innerText = hour;
+    if (! $('#hour-' + hour).empty()) {
+        $('#tableContent').css({ top: (-e.offsetTop + 20) + 'px' });
+        $('#bigNumber').html(hour);
     }
 }
 
@@ -59,6 +57,7 @@ function readFile(path) {
 function loadHTMLs()
 {
     debug('>> loadHTMLs');
+    return;
 
     var path = home_ + '/Library/Application Support/Televi/';
 
@@ -70,10 +69,10 @@ function endGenerate()
 {
     debug('>> endGenerate');
 
-    Element.hide('message');
-    Element.show('navigation');
+    $('message').hide();
+    $('navigation').show();
 
-    Form.enable('prefs');
+    $('#prefs').removeAttr('disabled');
 
     loadHTMLs();
     setTimeout('scrollToNow();', 1000);
@@ -94,8 +93,8 @@ function updateHTML()
     if (window.widget) {
         var cmd = widget.system("/usr/bin/ruby generate-html.rb " + state_,
                                 endGenerate);
-        Element.hide('navigation');
-        Element.show('message');
+        $('#navigation').hide();
+        $('#message').show();
         cmd.onreaderror = function(s) {
             $('message').innerHTML = s;
         };
@@ -145,9 +144,9 @@ function onshow()
 
     for (var i = 0; i < 24; i++) {
         if (i == now.getHours()) {
-            $('navi-' + i).style.color = '#fff';
+            $('#navi-' + i).css({ color: '#fff' });
         } else {
-            $('navi-' + i).style.color = '#336';
+            $('#navi-' + i).css({ color: '#336' });
         }
     }
 
@@ -171,17 +170,16 @@ function setup()
 {
     XMLHttpRequest.prototype.setRequestHeader = function () {};
     var pattern = /<A href="\/pg_grid_normal\/\?.*?&service_code=(\d+)&.*?">(.*?)<\/A>/g;
-    Zepto.get('http://www.ontvjapan.com/pg_change_area/?bc_code=00', function (data) {
+    $.get('http://www.ontvjapan.com/pg_change_area/?bc_code=00', function (data) {
         data.replace(pattern, function (s, serviceCode, name) {
-            var option = Zepto('<option/>').attr('value', serviceCode).html(name);
-            Zepto('#state').append(option);
+            var option = $('<option/>').attr('value', serviceCode).html(name);
+            $('#state').append(option);
         })
     });
 
     debug('>> setup');
 
-    Element.hide('back');
-    Element.hide('message');
+    $('#back, #message').hide();
 
     isUpdating_ = false;
     tooltip_ = new Tooltip('tooltip');
@@ -204,9 +202,9 @@ function setup()
         home_ = widget.system('/bin/echo -n $HOME', null).outputString;
     }
 
-    createGenericButton($('done'), 'Done', doneClicked);
+    createGenericButton(document.getElementById('done'), 'Done', doneClicked);
 
-    $('table').innerHTML = '';
+    $('#table').html('');
     setInterval('checkUpdate();', 1000 * 60 * 60);
 
     resizeWidget();
@@ -219,10 +217,10 @@ function resizeWidget()
 
     if (window.widget) {
         window.resizeTo(88 * width_ + 28, 180);
-        $('message').style.width = (88 * width_ + 28) + 'px';
+        $('#message').css({ width: (88 * width_ + 28) + 'px' });
     }
-    $('front').style.width = (88 * width_) + 'px';
-    $('table').style.width = (88 * width_ + 20) + 'px';
+    $('#front').css({ width: (88 * width_) + 'px' });
+    $('#table').css({ width: (88 * width_ + 20) + 'px' });
 }
 
 function changeState(s)
@@ -232,7 +230,7 @@ function changeState(s)
         widget.setPreferenceForKey(state_, "state");
     }
 
-    Form.disable('prefs');
+    $('#prefs').attr('disabled', 'disabled');
     updateHTML();
 }
 
@@ -242,15 +240,15 @@ Flip.beforeFlip = function()
 
     if (window.widget) {
         window.resizeTo(640, 180);
-        $('message').style.width = '640px';
+        $('#message').css({ width: '640px' });
     }
 
-    $('width').value = width_ + '';
+    $('#width').val(width_ + '');
 
-    var ary = $('state').options;
+    var ary = $('#state').get(0).options;
     for (var i = 0; i < ary.length; i++) {
         if (ary[i].value == state_) {
-            $('state').selectedIndex = i;
+            $('#state').attr('selectedIndex', i);
             break;
         }
     }

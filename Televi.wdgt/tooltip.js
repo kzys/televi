@@ -3,7 +3,14 @@
  * This source code is released under the MIT license.
  */
 
-var Tooltip = Class.create();
+var Tooltip = function (el) {
+    this.element = el;
+    $(el).hide();
+
+    this.shown = false;
+    this.showTimeout = null;
+    this.hideTimeout = null;
+}
 
 Tooltip.prototype = {
     onmouseover: function(element, event, content)
@@ -58,17 +65,11 @@ Tooltip.prototype = {
         clearTimeout(this.hideTimeout);
         this.hideTimeout = null;
 
-        Element.hide('tooltip');
+        $('#tooltip').hide();
         this.shown = false;
     },
 
     initialize: function(el)
     {
-        this.element = $(el);
-        Element.hide(el);
-
-        this.shown = false;
-        this.showTimeout = null;
-        this.hideTimeout = null;
     }
 };
