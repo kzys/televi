@@ -63,7 +63,7 @@ class Show
   alias_method :min,  :start_min
 end
 
-TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><b>24</b></TD>}
+TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><B>24</B></TD>}
 
 CHANNEL_PATTERN = %r{<option value="frame_status=child&qview=\d{5}(\d{4})&.*?">(.+?)</option>}
 
@@ -99,7 +99,7 @@ def parse_summery(lines)
   end
 end
 
-TITLE_PATTERN = %r{<A class="regular" title="(\d+):(\d+)-(\d+):(\d+) .+?" target="_self" href="(/pg_detail/show\?program_id=\d+)">(.+?)</A>}
+TITLE_PATTERN = %r{<A class=".+?" title="(\d+):(\d+)-(\d+):(\d+) .+?" target="_self" href="(/pg_detail/show\?program_id=\d+)">(.+?)</A>}
 
 def parse_programs(channels_map, html, today)
   tommorow = false
