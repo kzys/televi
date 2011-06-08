@@ -144,13 +144,14 @@ def parse_programs(channels_map, html, today)
 end
 
 NEXT_PAGE_PATTERN = %r{<a href="\./oneday\?frame_status=child&page=(\d+).*?"><IMG border=0 src="/img/grid/right.gif"></a>}
+ONE_DAY = 'http://www.ontvjapan.com/pg_grid_normal/oneday'
 
 def fetch_pages(location, fetcher = nil)
   fetcher ||= proc do |uri|
     open(uri).read
   end
 
-  uri = 'http://www.ontvjapan.com/pg_grid_normal/oneday?'
+  uri = "#{ONE_DAY}?service_code=#{location}"
   page = 1
   result = []
 
