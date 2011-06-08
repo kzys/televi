@@ -172,8 +172,7 @@ end
 
 # Main
 if __FILE__ == $0
-
-  pages = fetch_pages(ARGV.shift)
+  pages = $stdin.read.split(/\t/)
 
   first = pages.first
   channels = create_channels(first[0, first.length / 2])
@@ -185,9 +184,8 @@ if __FILE__ == $0
 
   parse_programs(channels_map, pages.join(''), Time.now.day)
 
-  tmpl = ERB.new(File.open('tmpl/table.rhtml').read)
-  puts tmpl.result(binding).gsub(/\n/, ' ')
-
-  tmpl = ERB.new(File.open('tmpl/channels.rhtml').read)
-  puts tmpl.result(binding).gsub(/\n/, ' ')
+  print([
+         ERB.new(File.open('tmpl/table.rhtml').read).result(binding),
+         ERB.new(File.open('tmpl/channels.rhtml').read).result(binding)
+        ].join("\t"))
 end

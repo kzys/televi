@@ -56,6 +56,28 @@ function endGenerate()
     isUpdating_ = false;
 }
 
+var ONE_DAY = 'http://www.ontvjapan.com/pg_grid_normal/oneday';
+var NEXT_PAGE_PATTERN = /<IMG border=0 src="\/img\/grid\/right\.gif">/;
+
+function fetchPages(callback, pages) {
+    if (! pages) {
+        pages = [];
+    }
+
+    $.ajax({
+        url: ONE_DAY,
+        data: { page: pages.length+1 },
+        success: function (data) {
+            pages.push(data);
+            if (data.match(NEXT_PAGE_PATTERN)) {
+                fetchPages(callback, pages);
+            } else {
+                callback(pages);
+            }
+        }
+    });
+}
+
 function updateHTML()
 {
     debug('>> updateHTML');
@@ -66,21 +88,32 @@ function updateHTML()
         isUpdating_ = true;
     }
 
-    if (window.widget) {
-        var cmd;
-        cmd = widget.system("/usr/bin/ruby generate-html.rb",
-                            function () {
-                                var ary = cmd.outputString.split(/\n/);
-                                $('#table').html(ary[0]);
-                                $('#channels').html(ary[1]);
-                                endGenerate();
-                            });
-        $('#navigation').hide();
-        $('#message').show();
-        cmd.onreaderror = function(s) {
+    if (! window.widget) {
+        return;
+    }
+
+    $('#navigation').hide();
+    $('#message').show();
+    fetchPages(function (pages) {
+        var str = pages.map(function (s) {
+            return s.replace(/\t/g, ' ');
+        }).join('\t');
+
+        var command;
+        command = widget.system("/usr/bin/ruby generate-html.rb",
+                                function () {
+                                    var ary = command.outputString.split(/\t/);
+                                    console.log(ary);
+                                    $('#table').html(ary[0]);
+                                    $('#channels').html(ary[1]);
+                                    endGenerate();
+                                });
+        command.onreaderror = function(s) {
             $('#message').innerHTML = s;
         };
-    }
+        command.write(str);
+        command.close();
+    });
 }
 
 function needsUpdate(mtime, now)
