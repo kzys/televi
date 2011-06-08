@@ -42,20 +42,6 @@ function endCat()
     $('table').innerHTML = 'hello!';
 }
 
-function endGenerate()
-{
-    debug('>> endGenerate');
-
-    $('#message').hide();
-    $('#navigation').show();
-
-    $('#prefs').removeAttr('disabled');
-
-    setTimeout('scrollToNow();', 1000);
-
-    isUpdating_ = false;
-}
-
 var ONE_DAY = 'http://www.ontvjapan.com/pg_grid_normal/oneday';
 var NEXT_PAGE_PATTERN = /<IMG border=0 src="\/img\/grid\/right\.gif">/;
 
@@ -83,45 +69,6 @@ function fetchPages(location, callback, pages) {
     });
 }
 
-function updateHTML()
-{
-    debug('>> updateHTML');
-
-    if (isUpdating_) {
-        return;
-    } else {
-        isUpdating_ = true;
-    }
-
-    if (! window.widget) {
-        return;
-    }
-
-    var callback = function (pages) {
-        var str = pages.map(function (s) {
-            return s.replace(/\t/g, ' ');
-        }).join('\t');
-
-        var command;
-        command = widget.system("/usr/bin/ruby generate-html.rb",
-                                function () {
-                                    var ary = command.outputString.split(/\t/);
-                                    console.log(ary);
-                                    $('#table').html(ary[0]);
-                                    $('#channels').html(ary[1]);
-                                    endGenerate();
-                                });
-        command.onreaderror = function(s) {
-            $('#message').innerHTML = s;
-        };
-        command.write(str);
-        command.close();
-    }
-
-    $('#navigation').hide();
-    $('#message').show();
-    fetchPages(null, callback);
-}
 
 function needsUpdate(mtime, now)
 {
@@ -140,7 +87,7 @@ function needsUpdate(mtime, now)
 
 function checkUpdate()
 {
-    updateHTML();
+    app.update();
     return true;
 
     var path = home_ + '/Library/Application Support/Televi/';
@@ -151,7 +98,7 @@ function checkUpdate()
         return true;
     } else if (needsUpdate(File.mtime(path + 'table.html'), now)) {
         debug('Need to update');
-        updateHTML();
+        app.update();
         return true;
     } else {
         return false;
@@ -204,6 +151,67 @@ function createOptions(callback) {
           });
 }
 
+function MainWidget() {
+    this._updating = false;
+}
+
+MainWidget.prototype = {
+    update: function () {
+        debug('>> updateHTML');
+
+        if (this._updating) {
+            return;
+        } else {
+            this._updating = true;
+        }
+
+        if (! window.widget) {
+            return;
+        }
+
+        var that = this;
+
+        var callback = function (pages) {
+            var str = pages.map(function (s) {
+                return s.replace(/\t/g, ' ');
+            }).join('\t');
+
+            var command;
+            command = widget.system("/usr/bin/ruby generate-html.rb",
+                                    function () {
+                                        var ary = command.outputString.split(/\t/);
+                                        $('#table').html(ary[0]);
+                                        $('#channels').html(ary[1]);
+                                        that.endGenerate();
+                                    });
+            command.onreaderror = function(s) {
+                $('#message').innerHTML = s;
+            };
+            command.write(str);
+            command.close();
+        }
+
+        $('#navigation').hide();
+        $('#message').show();
+        fetchPages(null, callback);
+    },
+
+    endGenerate: function () {
+        debug('>> endGenerate');
+
+        $('#message').hide();
+        $('#navigation').show();
+
+        $('#prefs').removeAttr('disabled');
+
+        setTimeout('scrollToNow();', 1000);
+
+        this._updating = false;
+    }
+};
+
+var app;
+
 function setup()
 {
     XMLHttpRequest.prototype.setRequestHeader = function () {};
@@ -216,7 +224,7 @@ function setup()
         $('#state').append(options);
     });
 
-    isUpdating_ = false;
+    app = new MainWidget;
     tooltip_ = new Tooltip($('#tooltip').get(0));
 
     if (widget) {
@@ -264,7 +272,7 @@ function changeState(s)
     }
 
     $('#prefs').attr('disabled', 'disabled');
-    updateHTML();
+    app.update();
 }
 
 Flip.beforeFlip = function()
