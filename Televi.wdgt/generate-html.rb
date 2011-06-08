@@ -151,12 +151,15 @@ def fetch_pages(location, fetcher = nil)
     open(uri).read
   end
 
-  uri = "#{ONE_DAY}?service_code=#{location}"
+  uri = "#{ONE_DAY}?"
+  if location
+    uri += "service_code=#{location}&"
+  end
   page = 1
   result = []
 
   loop do
-    result << fetcher.call("#{uri}&page=#{page}")
+    result << fetcher.call("#{uri}page=#{page}")
     if result.last =~ NEXT_PAGE_PATTERN
       page += 1
     else
