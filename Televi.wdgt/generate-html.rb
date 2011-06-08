@@ -4,6 +4,7 @@ This source code is released under the MIT license.
 =end
 
 require 'kconv'
+require 'open-uri'
 
 def escape_multibyte_char(s)
   s.gsub(/./u) do |c|
@@ -63,7 +64,7 @@ end
 CHANNEL_PATTERN = %r{<OPTION VALUE="/program/gridOneday.php\?.+?" >(.+?)</OPTION><!--(\d{4})-->}
 TITLE_PATTERN = %r{<a .*?href="(/genre/detail.php3\?.*?&hsid=\d{4}\d{2}(\d{2})(\d{4})\d{3})" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
 TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><b>24</b></TD>}
-NEXT_PAGE_PATTERN = %r{<a href="/program/gridOneday\.php\?.*?&page=(\d+).*?"><IMG border=0 src="/images/grid/right.gif"</a>}
+
 
 def create_channels(html)
   result = []
@@ -131,6 +132,29 @@ def parse_programs(channels_map, html, today)
       tommorow = true
     end
   end
+end
+
+NEXT_PAGE_PATTERN = %r{<a href="\./oneday\?frame_status=child&page=(\d+).*?"><IMG border=0 src="/img/grid/right.gif"></a>}
+
+def fetch_pages(location, fetcher = nil)
+  fetcher ||= proc do |uri|
+    open(uri).read
+  end
+
+  uri = 'http://www.ontvjapan.com/pg_grid_normal/oneday?'
+  page = 1
+  result = []
+
+  loop do
+    result << fetcher.call("#{uri}&page=#{page}")
+    if result.last =~ NEXT_PAGE_PATTERN
+      page += 1
+    else
+      break
+    end
+  end
+
+  result
 end
 
 # Main
