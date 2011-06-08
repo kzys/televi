@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
 =begin
 Copyright (c) 2005-2006 KATO Kazuyoshi <kzys@8-p.info>
 This source code is released under the MIT license.
 =end
 
-require 'kconv'
 require 'open-uri'
+require 'erb'
+require 'pathname'
 
 def escape_multibyte_char(s)
   s.gsub(/./u) do |c|
@@ -61,19 +63,15 @@ class Show
   alias_method :min,  :start_min
 end
 
-CHANNEL_PATTERN = %r{<OPTION VALUE="/program/gridOneday.php\?.+?" >(.+?)</OPTION><!--(\d{4})-->}
-TITLE_PATTERN = %r{<a .*?href="(/genre/detail.php3\?.*?&hsid=\d{4}\d{2}(\d{2})(\d{4})\d{3})" target=_self title="(\d{2}):(\d{2})-(\d{2}):(\d{2}) .*?">(.*)</a>}
 TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><b>24</b></TD>}
 
+CHANNEL_PATTERN = %r{<option value="frame_status=child&qview=\d{5}(\d{4})&.*?">(.+?)</option>}
 
 def create_channels(html)
   result = []
 
-  # Half
-  html = html[0, html.length / 2]
-
   html.scan(CHANNEL_PATTERN) do
-    result << Channel.new($2.to_i, $1)
+    result << Channel.new($1.to_i, $2)
   end
 
   result
@@ -84,7 +82,7 @@ def parse_summery(lines)
 
   while ln = lines.shift
     case ln
-    when %r{<span class="style_corner">(.*?)</span>}
+    when %r{<SPAN class="style_corner">(.*?)</SPAN>}
       corner = $1
       corner = nil if corner.empty?
 
@@ -95,11 +93,13 @@ def parse_summery(lines)
               else
                 nil
               end)
-    when %r{<span class="style_subtitle">(.*?)</span>}
+    when %r{<SPAN class="style_subtitle">(.*?)</SPAN>}
       subtitle = $1
     end
   end
 end
+
+TITLE_PATTERN = %r{<A class="regular" title="(\d+):(\d+)-(\d+):(\d+) .+?" target="_self" href="(/pg_detail/show\?program_id=\d+)">(.+?)</A>}
 
 def parse_programs(channels_map, html, today)
   tommorow = false
@@ -108,17 +108,26 @@ def parse_programs(channels_map, html, today)
 
   while ln = lines.shift
     if md = ln.match(TITLE_PATTERN)
-      title = md[8].gsub(/<.+?>/, '')
+      title = md[6].gsub(/<.*?>/, '')
 
       summery = parse_summery(lines)
       unless summery
         summery = title
       end
 
-      summery.gsub!(/&#.+?;/, ' ')
-      title = "<div onmouseover=\"showSummery(this, event, '#{summery}')\"><a onclick=\"top.openONTV('#{md[1]}')\">#{title}</a></div>"
+      # summery.gsub!(/&#.+?;/, ' ')
+      # title = "<div onmouseover=\"showSummery(this, event, '#{summery}')\"><a onclick=\"top.openONTV('#{md[1]}')\">#{title}</a></div>"
 
-      day, ch, start_hour, start_min, last_hour, last_min = *(md[2, 6].collect do |i| i.to_i end)
+      start_hour, start_min, last_hour, last_min = *(md[1, 4].collect do |i|
+                                                       i.to_i
+                                                     end)
+
+      if md[5] =~ %r{\?program_id=(\d{4})\d{4}\d{2}\d{2}}
+        ch = $1.to_i
+      else
+        raise "Failed to parse: #{md[5]}"
+      end
+
       if tommorow
         start_hour += 24
         last_hour += 24
@@ -159,55 +168,28 @@ end
 
 # Main
 if __FILE__ == $0
-  require 'pathname'
+
+  pages = fetch_pages(ARGV.shift)
+
+  first = pages.first
+  channels = create_channels(first[0, first.length / 2])
+
+  channels_map = {}
+  channels.each do |ch|
+    channels_map[ch.number] = ch
+  end
+
+  parse_programs(channels_map, pages.join(''), Time.now.day)
+
 
   path = Pathname.new("~/Library/Application Support/Televi").expand_path
   unless path.exist?
     path.mkdir
   end
 
-  uri = (if ARGV.empty?
-           "http://www.ontvjapan.com/program/gridOneday.php?"
-         else
-           "http://www.ontvjapan.com/program/gridOneday.php?tikicd=#{ARGV.shift}"
-         end)
-
-  html = nil
-  page = 1
-
-  channels = []
-  channels_map = {}
-
-  loop do
-    $stderr.print("Getting page #{page}...")
-
-    data = `./nsurlget '#{uri}&page=#{page}'`
-
-    html = data.toutf8
-
-    if channels.empty?
-      $stderr.print("Parsing channels...")
-      channels = create_channels(html)
-      channels.each do |ch|
-        channels_map[ch.number] = ch
-      end
-    end
-
-    $stderr.print("Parsing page #{page}...")
-    parse_programs(channels_map, html, Time.now.day)
-
-    if html =~ NEXT_PAGE_PATTERN
-      page += 1
-    else
-      break
-    end
-  end
-
-  require 'erb'
-
   tmpl = ERB.new(File.open('tmpl/table.rhtml').read)
-  File.open("#{path}/table.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))
+  File.open("#{path}/table.html", 'w').print(tmpl.result(binding))
 
   tmpl = ERB.new(File.open('tmpl/channels.rhtml').read)
-  File.open("#{path}/channels.html", 'w').print(escape_multibyte_char(tmpl.result(binding)))
+  File.open("#{path}/channels.html", 'w').print(tmpl.result(binding))
 end
