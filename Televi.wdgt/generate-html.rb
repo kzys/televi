@@ -143,33 +143,6 @@ def parse_programs(channels_map, html, today)
   end
 end
 
-NEXT_PAGE_PATTERN = %r{<a href="\./oneday\?frame_status=child&page=(\d+).*?"><IMG border=0 src="/img/grid/right.gif"></a>}
-ONE_DAY = 'http://www.ontvjapan.com/pg_grid_normal/oneday'
-
-def fetch_pages(location, fetcher = nil)
-  fetcher ||= proc do |uri|
-    open(uri).read
-  end
-
-  uri = "#{ONE_DAY}?"
-  if location
-    uri += "service_code=#{location}&"
-  end
-  page = 1
-  result = []
-
-  loop do
-    result << fetcher.call("#{uri}page=#{page}")
-    if result.last =~ NEXT_PAGE_PATTERN
-      page += 1
-    else
-      break
-    end
-  end
-
-  result
-end
-
 # Main
 if __FILE__ == $0
   pages = $stdin.read.split(/\t/)

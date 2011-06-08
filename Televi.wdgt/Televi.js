@@ -59,18 +59,23 @@ function endGenerate()
 var ONE_DAY = 'http://www.ontvjapan.com/pg_grid_normal/oneday';
 var NEXT_PAGE_PATTERN = /<IMG border=0 src="\/img\/grid\/right\.gif">/;
 
-function fetchPages(callback, pages) {
+function fetchPages(location, callback, pages) {
     if (! pages) {
         pages = [];
     }
 
+    var query = { page: pages.length+1 };
+    if (location) {
+        query.service_code = location;
+    }
+
     $.ajax({
         url: ONE_DAY,
-        data: { page: pages.length+1 },
+        data: query,
         success: function (data) {
             pages.push(data);
             if (data.match(NEXT_PAGE_PATTERN)) {
-                fetchPages(callback, pages);
+                fetchPages(location, callback, pages);
             } else {
                 callback(pages);
             }
@@ -92,9 +97,7 @@ function updateHTML()
         return;
     }
 
-    $('#navigation').hide();
-    $('#message').show();
-    fetchPages(function (pages) {
+    var callback = function (pages) {
         var str = pages.map(function (s) {
             return s.replace(/\t/g, ' ');
         }).join('\t');
@@ -113,7 +116,11 @@ function updateHTML()
         };
         command.write(str);
         command.close();
-    });
+    }
+
+    $('#navigation').hide();
+    $('#message').show();
+    fetchPages(null, callback);
 }
 
 function needsUpdate(mtime, now)
