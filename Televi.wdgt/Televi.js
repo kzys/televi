@@ -169,6 +169,15 @@ function onhide()
 
 function setup()
 {
+    XMLHttpRequest.prototype.setRequestHeader = function () {};
+    var pattern = /<A href="\/pg_grid_normal\/\?.*?&service_code=(\d+)&.*?">(.*?)<\/A>/g;
+    Zepto.get('http://www.ontvjapan.com/pg_change_area/?bc_code=00', function (data) {
+        data.replace(pattern, function (s, serviceCode, name) {
+            var option = Zepto('<option/>').attr('value', serviceCode).html(name);
+            Zepto('#state').append(option);
+        })
+    });
+
     debug('>> setup');
 
     Element.hide('back');

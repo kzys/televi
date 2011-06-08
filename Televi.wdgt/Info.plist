@@ -4,6 +4,8 @@
   <dict>
     <key>AllowSystem</key>
     <true/>
+    <key>AllowNetworkAccess</key>
+    <true/>
     <key>AllowFileAccessOutsideOfWidget</key>
     <true/>
     <key>CFBundleIdentifier</key>
