@@ -65,7 +65,7 @@ end
 
 TOMMOROW_PATTERN = %r{<TD rowspan=12 class=time width="10" valign="top"><B>24</B></TD>}
 
-CHANNEL_PATTERN = %r{<option value="frame_status=child&qview=\d{5}(\d{4})&.*?">(.+?)</option>}
+CHANNEL_PATTERN = %r{<option value=".+?\?frame_status=child&qview=\d{5}(\d{4})&.*?">(.+?)</option>}
 
 def create_channels(html)
   result = []
